@@ -1,0 +1,30 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+
+# Node (if ever added)
+node_modules/
+npm-debug.log*
+
+# Build artifacts (regenerate with build_data.py)
+# data/vocabulary.js  — uncomment if you don't want to track the generated data
