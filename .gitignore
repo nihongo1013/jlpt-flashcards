@@ -21,6 +21,9 @@ __pycache__/
 *.pyo
 .env
 venv/
+.venv/
+scripts/.telugu_cache.json
+scripts/.telugu_cache.json.tmp
 
 # Node (if ever added)
 node_modules/

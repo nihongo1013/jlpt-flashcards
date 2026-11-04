@@ -1,144 +1,97 @@
-# 🌸 NIHONGO 1013 — JLPT Flashcards
+# JLPT Flashcards
 
-> **Learn Japanese • Speak Japanese • Enjoy Japanese**
+A Japanese vocabulary flashcard app covering JLPT N5–N1, with translations and text-to-speech.
 
-A beautiful, interactive Japanese vocabulary flashcard application covering all JLPT levels (N5–N1) with **6,280+ words**, multi-language translations, and text-to-speech support.
+## Features
 
----
+- 6,280+ vocabulary cards across JLPT N5 → N1
+- Translations: English, Hindi, Telugu (more languages can be added via the CSV)
+- Text-to-speech for Japanese and for the chosen meaning language
+- Voice picker that defaults to the best supported voice in the current browser
+- Category and level filters, search, shuffle, fullscreen, and autoplay
 
-## ✨ Features
-
-- **6,280+ vocabulary cards** across JLPT N5 → N1
-- **Multi-language translations** — English 🇬🇧, Hindi 🇮🇳, Telugu 🇮🇳 (more coming!)
-- **Text-to-Speech** — Listen to Japanese pronunciation and meaning in your chosen language
-- **Smart voice selection** — Auto-picks the best browser voice; manual override available
-- **Category & level filters** — Focus on specific word types or JLPT levels
-- **Search** — Instantly search across all fields (kanji, kana, romaji, meaning)
-- **Fullscreen mode** — Immersive card-by-card study with keyboard navigation
-- **Autoplay** — Hands-free sequential card playback with pronunciation
-- **Shuffle mode** — Randomize card order for varied practice
-- **Responsive design** — Works beautifully on desktop, tablet, and mobile
-- **Dark mode** — Automatic dark theme based on system preference
-- **Sakura petal animations** — Aesthetic Japanese-themed UI ✿
-
----
-
-## 📁 Project Structure
+## Project structure
 
 ```
 jlpt-flashcards/
-├── index.html          # Main HTML shell
+├── index.html
 ├── css/
-│   └── styles.css      # All styles (design system, responsive, dark mode)
+│   └── styles.css
 ├── js/
-│   └── app.js          # Application logic (rendering, speech, filtering)
+│   ├── config.js      # Language registry and shared constants
+│   ├── state.js       # App state
+│   ├── data.js        # Filtering and language field helpers
+│   ├── speech.js      # Voice selection and playback
+│   ├── ui.js          # Cards, settings, fullscreen, autoplay
+│   └── app.js         # Event wiring and startup
 ├── data/
-│   └── vocabulary.js   # Auto-generated vocabulary data (from CSV)
-├── Vocabulary.csv       # Source vocabulary data (6,280+ rows)
-├── build_data.py       # Script to rebuild data/vocabulary.js from CSV
+│   └── vocabulary.js  # Generated from Vocabulary.csv
+├── scripts/
+│   └── fill_telugu.py # Fills empty Telugu cells from Japanese
+├── Vocabulary.csv     # Source of truth for every language
+├── build_data.py      # Rebuilds data/vocabulary.js from the CSV
 ├── .gitignore
 └── README.md
 ```
 
----
+## Getting started
 
-## 🚀 Getting Started
-
-### Quick Start
-Simply open `index.html` in any modern browser — no build step or server required!
+Open `index.html` in a modern browser, or serve the folder:
 
 ```bash
-# Clone the repo
-git clone <your-repo-url>
-cd jlpt-flashcards
-
-# Open in browser
-open index.html    # macOS
-xdg-open index.html  # Linux
-start index.html   # Windows
+python3 -m http.server 8765
 ```
 
-### Updating Vocabulary Data
+Then visit `http://127.0.0.1:8765/`.
 
-The vocabulary source of truth is `Vocabulary.csv`. When you update the CSV (add words, add languages, fix translations):
+## Updating vocabulary
+
+`Vocabulary.csv` is the source of truth. Always add or fix translations in the CSV first.
 
 ```bash
 python3 build_data.py
 ```
 
-This regenerates `data/vocabulary.js` from the CSV.
+That regenerates `data/vocabulary.js`.
 
----
+To fill empty Telugu cells from Japanese:
 
-## 🌐 Adding a New Language
+```bash
+python3 scripts/fill_telugu.py
+python3 build_data.py
+```
 
-1. **Update the CSV** — Add a new column to `Vocabulary.csv` (e.g., `ko` for Korean)
-2. **Rebuild data** — Run `python3 build_data.py` (update it to include the new field)
-3. **Register the language** in `js/app.js`:
-   ```javascript
-   const LANGUAGES = {
-     // ... existing languages ...
-     ko: { label: "한국어", langCode: "ko-KR", field: "ko", textClass: "ko-t", voiceSelectId: "meaningVoice", icon: "🇰🇷" },
-   };
-   ```
-4. **Add a CSS class** for the new language text in `css/styles.css`:
-   ```css
-   .ko-t { font-size: clamp(22px,3.5vw,34px); font-weight: 700; color: #1565C0; ... }
-   ```
-5. **Add the option** in `index.html` settings:
-   ```html
-   <option value="ko">🇰🇷 한국어 (Korean)</option>
-   ```
+## Adding a new language
 
----
+1. Add a column to `Vocabulary.csv` (for example `ko` for Korean) and fill it.
+2. Run `python3 build_data.py` (include the new field in `build_data.py`).
+3. Register the language in `js/config.js`:
 
-## 📊 CSV Format
+```javascript
+ko: { label: "한국어", langCode: "ko-KR", field: "ko", textClass: "ko-t", icon: "🇰🇷" },
+```
+
+4. Add the option in Settings in `index.html`.
+5. Add a CSS class for the meaning text.
+
+Default meaning language is English. After a language is chosen, the meaning-voice dropdown lists voices for that language and selects the best one the browser reports.
+
+## CSV columns
 
 | Column | Description |
 |--------|-------------|
-| `n`    | Word number (unique ID) |
+| `n`    | Word number |
 | `w`    | Kanji / word form |
 | `r`    | Reading (kana) |
 | `ro`   | Romaji |
 | `m`    | English meaning |
-| `h`    | Hindi meaning (हिंदी) |
-| `te`   | Telugu meaning (తెలుగు) |
+| `h`    | Hindi meaning |
+| `te`   | Telugu meaning |
 | `c`    | Category |
 | `p`    | Part of speech |
-| `lv`   | JLPT Level (N5–N1) |
+| `lv`   | JLPT level (N5–N1) |
 | `em`   | Emoji |
 
----
+## Tech
 
-## 🎨 Design
-
-- **Japanese-inspired aesthetic** with sakura (🌸) themed colors
-- **Premium card design** with gradient accents and hover animations
-- **NIHONGO 1013 brand** with brand-red (#C62828) and sakura-pink (#F7B7C8)
-- **Automatic dark mode** with a night-themed palette
-- **Fully responsive** — optimized for 480px, 700px, and desktop breakpoints
-
----
-
-## 🛠 Tech Stack
-
-- **HTML5** + **CSS3** (vanilla, no frameworks)
-- **Vanilla JavaScript** (no dependencies)
-- **Web Speech API** for text-to-speech
-- **Python 3** for data build script
-
----
-
-## 📱 Follow Us
-
-- Instagram: [@nihongo_1013](https://www.instagram.com/nihongo_1013)
-
----
-
-## 📄 License
-
-This project is open source. Feel free to use and modify for educational purposes.
-
----
-
-*Built with ❤️ for Japanese language learners everywhere* 🇯🇵
+HTML, CSS, and vanilla JavaScript. Speech uses the Web Speech API. Python 3 is used only to rebuild data from the CSV.

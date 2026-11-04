@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NIHONGO 1013 - JLPT Flashcards</title>
+  <title>JLPT Flashcards</title>
   <meta name="description" content="Learn Japanese vocabulary with JLPT N5-N1 flashcards. Supports English, Hindi, and Telugu translations with text-to-speech.">
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -11,10 +11,8 @@
 <header>
   <div class="header-top">
     <div class="brand">
-      <div class="brand-name">NIHONGO 1013</div>
-      <div class="brand-tagline">Learn Japanese • Speak Japanese • Enjoy Japanese</div>
+      <div class="brand-name">JLPT Flashcards</div>
     </div>
-    <div class="level-badge" id="levelBadge">JLPT N1</div>
   </div>
   <div class="search-bar">
     <input type="text" id="q" placeholder="Search vocabulary...">
@@ -75,8 +73,8 @@
         <select id="jpVoice" title="Japanese voice"><option value="">JP Voice (auto)</option></select>
       </div>
       <div class="settings-section">
-        <label>🗣️ Meaning Voice</label>
-        <select id="meaningVoice" title="Meaning voice"><option value="">Voice (auto)</option></select>
+        <label id="meaningVoiceLabel">🗣️ English Voice</label>
+        <select id="meaningVoice" title="Meaning voice"><option value="">English Voice (auto)</option></select>
       </div>
       <div class="settings-section">
         <button id="shuf" class="settings-toggle" title="Shuffle cards">
@@ -116,8 +114,13 @@
   <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
 </div>
 
-<!-- Scripts: Data first, then App logic -->
+<!-- Scripts: data, then modules, then bootstrap -->
 <script src="data/vocabulary.js"></script>
+<script src="js/config.js"></script>
+<script src="js/state.js"></script>
+<script src="js/data.js"></script>
+<script src="js/speech.js"></script>
+<script src="js/ui.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
