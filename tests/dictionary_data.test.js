@@ -136,6 +136,7 @@ test("HTML exposes the two language fields, new name, and new modules", () => {
   for (const id of [
     "deckMode", "sourceLang", "targetLang", "swapLangs", "langSelect",
     "frontVoice", "backVoice", "showContext", "pairFields",
+    "speedSlider", "textSizeSlider", "autoplayBar", "fsCounter",
   ]) {
     assert.ok(html.includes(`id="${id}"`), `missing #${id}`);
   }
@@ -166,7 +167,7 @@ test("frontend copy stays minimal and deck label has no CSV annotation", () => {
   assert.ok(!html.includes("JLPT Japanese (legacy CSV)"));
 });
 
-test("fullscreen and autoplay reuse the first-page card and hide selectors", () => {
+test("fullscreen and first page keep navigation controls", () => {
   const html = read("index.html");
   const css = read("css/styles.css");
   const ui = read("js/ui.js");
@@ -176,6 +177,15 @@ test("fullscreen and autoplay reuse the first-page card and hide selectors", () 
   assert.match(ui, /const rootClass = "card" \+ \(index === selectedCardIndex \? " active" : ""\);/);
   assert.match(ui, /function renderFSCard[\s\S]*renderCardContent\(pool\[index\], index, true\)/);
   assert.match(ui, /bar\.classList\.toggle\("hidden", autoplayActive \|\| fullscreen\)/);
+  assert.ok(html.includes('id="autoplayBar"'));
+  assert.ok(html.includes('class="fs-nav"'));
+  assert.ok(html.includes('id="fsCounter"'));
+  assert.ok(html.includes('id="autoplayStatus"'));
+  assert.ok(html.includes('id="progressFill"'));
+  assert.ok(ui.includes("function updatePlayer()"));
+  assert.ok(ui.includes("function nextCard()"));
+  assert.ok(ui.includes("function prevCard()"));
+  assert.ok(!html.includes('id="status"'));
   for (const name of ["startAutoplay", "stopAutoplay", "toggleFullscreen", "closeFullscreen"]) {
     const match = ui.match(new RegExp(`function ${name}\\(\\) \\{([\\s\\S]*?)\\n\\}`));
     assert.ok(match, `missing ${name}`);
@@ -207,12 +217,18 @@ test("design skills are integrated into the frontend layer", () => {
   assert.ok(design.includes("www.ui-skills.com"));
   assert.ok(design.includes("agenticskills.io/category/design"));
   assert.ok(design.includes("plugin87/ux-ui-agent-skills"));
+  assert.ok(design.includes("Playback speed"));
+  assert.ok(design.includes("Card text size"));
   assert.ok(ui.includes("card-meta"));
   assert.ok(ui.includes("card-index"));
   assert.ok(ui.includes("card-pair"));
   assert.ok(ui.includes("term-text"));
   assert.ok(ui.includes("fitCardsToViewport"));
   assert.ok(ui.includes("fitFullscreenCard"));
+  assert.ok(ui.includes("fitCardText"));
+  assert.ok(ui.includes("updatePlayer"));
+  assert.ok(speech.includes("speechRate"));
+  assert.ok(app.includes("cardTextMax"));
   assert.ok(!ui.includes("side-head"));
   assert.ok(!ui.includes("side-label"));
   assert.ok(!ui.includes("card-pos"));
@@ -221,27 +237,35 @@ test("design skills are integrated into the frontend layer", () => {
   assert.ok(!ui.includes("createSakuraPetal"));
 });
 
-test("cards stay compact, fit the viewport, and rotate accents", () => {
+test("cards fit the viewport, restore controls, and rotate accents", () => {
   const html = read("index.html");
   const css = read("css/redesign.css");
   const ui = read("js/ui.js");
   const app = read("js/app.js");
+  const state = read("js/state.js");
+  const speech = read("js/speech.js");
   assert.ok(!html.includes('id="status"'));
-  assert.ok(!html.includes("autoplay-bar"));
-  assert.ok(!html.includes("fs-nav"));
-  assert.ok(!ui.includes("autoplayBar"));
-  assert.ok(!ui.includes("autoplayStatus"));
-  assert.ok(!ui.includes("progressFill"));
-  assert.ok(!ui.includes("fsCounter"));
+  assert.ok(html.includes('id="autoplayBar"'));
+  assert.ok(html.includes('class="fs-nav"'));
+  assert.ok(html.includes('id="autoplayStatus"'));
+  assert.ok(html.includes('id="progressFill"'));
+  assert.ok(html.includes('id="fsCounter"'));
+  assert.ok(html.includes('id="speedSlider"'));
+  assert.ok(html.includes('id="textSizeSlider"'));
   assert.ok(html.includes("settings-icon"));
   assert.ok(html.includes('id="instaBtn"'));
   assert.ok(html.includes("https://www.instagram.com/nihongo_1013"));
-  assert.ok(css.includes("--card-scale"));
-  assert.ok(css.includes("--fs-scale"));
-  assert.ok(css.includes('--visible-card-max: calc((100vh - var(--header-approx) - var(--space-4)) / 2)'));
-  assert.ok(css.includes('gap: calc(var(--space-2) * var(--card-scale, 1))'));
-  assert.ok(!css.includes('max-height: var(--visible-card-max)'));
-  assert.ok(!css.includes('max-height: 100%'));
+  assert.ok(css.includes("--card-height"));
+  assert.ok(css.includes("--fs-stage-height"));
+  assert.ok(css.includes("--fs-nav-reserve"));
+  assert.ok(!css.includes("--card-scale"));
+  assert.ok(!css.includes("--fs-scale"));
+  assert.ok(!css.includes("zoom:"));
+  assert.ok(css.includes("height: var(--card-height, 300px)"));
+  assert.ok(css.includes("height: var(--fs-stage-height)"));
+  assert.ok(css.includes(".autoplay-bar {"));
+  assert.ok(css.includes(".fs-nav {"));
+  assert.match(css, /\.side-line \{[\s\S]*?align-items: center;/);
   assert.ok(css.includes(':root[data-accent="oxide"]'));
   assert.ok(css.includes(':root[data-accent="indigo"]'));
   assert.ok(css.includes(':root[data-accent="plum"]'));
@@ -250,11 +274,38 @@ test("cards stay compact, fit the viewport, and rotate accents", () => {
   assert.ok(app.includes("ACCENT_KEYS"));
   assert.ok(app.includes("applyRandomAccent"));
   assert.ok(app.includes("accent: currentAccent"));
+  assert.ok(app.includes("speechRate: speechRate"));
+  assert.ok(app.includes("cardTextMax: cardTextMax"));
+  assert.ok(ui.includes("fitCardText"));
+  assert.ok(ui.includes("nextCard"));
+  assert.ok(ui.includes("prevCard"));
+  assert.ok(ui.includes("updatePlayer"));
   assert.match(ui, /const ordinal = String\(index \+ 1\);/);
-  assert.match(ui, /second\.bottom - first\.top/);
-  assert.match(ui, /stage\.clientHeight/);
-  assert.match(read("js/state.js"), /let showSenseContext = false;/);
+  assert.match(ui, /window\.innerHeight - top - playerHeight - gap/);
+  assert.match(ui, /stage\.style\.setProperty\("--fs-stage-height"/);
+  assert.match(state, /let speechRate = 1;/);
+  assert.match(state, /let cardTextMax = 96;/);
+  assert.match(speech, /utterance\.rate = \(typeof speechRate/);
+  assert.match(speech, /function playbackGap/);
+  assert.match(state, /let showSenseContext = false;/);
   assert.ok(!html.includes('id="showContext" checked'));
+});
+
+test("settings expose playback speed and card text size sliders", () => {
+  const html = read("index.html");
+  const app = read("js/app.js");
+  const speech = read("js/speech.js");
+  const ui = read("js/ui.js");
+  assert.match(html, /id="speedSlider"[^>]*min="0\.5"[^>]*max="2"/);
+  assert.match(html, /id="textSizeSlider"[^>]*min="24"[^>]*max="96"/);
+  assert.match(app, /\$\("speedSlider"\)\.addEventListener\("input"/);
+  assert.match(app, /\$\("textSizeSlider"\)\.addEventListener\("input"/);
+  assert.match(app, /speechRate: speechRate/);
+  assert.match(app, /cardTextMax: cardTextMax/);
+  assert.match(speech, /utterance\.rate = \(typeof speechRate/);
+  assert.match(speech, /return Math\.max\(120, Math\.round\(baseMs \/ rate\)\)/);
+  assert.match(ui, /function updateSettingsControls/);
+  assert.match(ui, /const maxFont = Math\.round\(cardTextMax/);
 });
 
 const speechContext = userAgent => {

@@ -31,6 +31,8 @@ function persistSettings() {
       shuffled: shuffled,
       showSenseContext: showSenseContext,
       accent: currentAccent,
+      speechRate: speechRate,
+      cardTextMax: cardTextMax,
     }));
   } catch (_) {
     /* localStorage can be unavailable when opened directly as file:// */
@@ -54,6 +56,10 @@ function applyStoredSettings() {
   if (saved.level) $("lv").value = saved.level;
   shuffled = !!saved.shuffled;
   showSenseContext = saved.showSenseContext === true;
+  const savedRate = Number(saved.speechRate);
+  if (savedRate >= 0.5 && savedRate <= 2) speechRate = savedRate;
+  const savedTextMax = Number(saved.cardTextMax);
+  if (savedTextMax >= 24 && savedTextMax <= 96) cardTextMax = savedTextMax;
   if (ACCENT_KEYS.includes(saved.accent)) {
     currentAccent = saved.accent;
     document.documentElement.dataset.accent = currentAccent;
@@ -164,6 +170,20 @@ function bindDeckEvents() {
     showSenseContext = !!event.target.checked;
     render();
     if ($("fsOverlay").classList.contains("on")) renderFSCard();
+    persistSettings();
+  });
+
+  $("speedSlider").addEventListener("input", event => {
+    speechRate = Math.min(2, Math.max(0.5, Number(event.target.value) || 1));
+    updateSettingsControls();
+    persistSettings();
+  });
+
+  $("textSizeSlider").addEventListener("input", event => {
+    cardTextMax = Math.min(96, Math.max(24, Number(event.target.value) || 96));
+    updateSettingsControls();
+    fitCardsToViewport();
+    if ($("fsOverlay").classList.contains("on")) fitFullscreenCard();
     persistSettings();
   });
 }

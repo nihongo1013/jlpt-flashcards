@@ -99,7 +99,9 @@
   --type-4xl: 36px;
   --type-5xl: 48px;
   --type-6xl: 60px;
-  --line-tight: 1.15;
+  --type-7xl: 72px;
+  --type-8xl: 96px;
+  --line-tight: 1.05;
   --line-heading: 1.25;
   --line-body: 1.5;
 
@@ -137,16 +139,19 @@
   --field-min: 12em;
   --header-approx: 152px;
   --visible-card-max: calc((100vh - var(--header-approx) - var(--space-4)) / 2);
-  --fs-stage-height: calc(100vh - var(--space-8));
-  --card-pad: clamp(var(--space-2), 1.6vh, var(--space-4));
-  --card-gap: clamp(var(--space-1), 1vh, var(--space-3));
-  --term-front: clamp(var(--type-lg), 3vh, var(--type-3xl));
-  --term-back: clamp(var(--type-base), 2.4vh, var(--type-2xl));
-  --reading-size: clamp(var(--type-xs), 1.6vh, var(--type-base));
+  --player-height: 64px;
+  --fs-nav-reserve: 112px;
+  --card-height: 300px;
+  --fs-stage-height: calc(100vh - var(--fs-nav-reserve));
+  --card-pad: clamp(var(--space-2), 1.2vh, var(--space-3));
+  --card-gap: clamp(var(--space-1), 0.8vh, var(--space-2));
+  --term-front: clamp(var(--type-2xl), 5vh, var(--type-8xl));
+  --term-back: clamp(var(--type-xl), 4vh, var(--type-7xl));
+  --reading-size: clamp(var(--type-sm), 1.8vh, var(--type-lg));
   --sense-size: clamp(var(--type-xs), 1.5vh, var(--type-sm));
   --fs-pad: clamp(var(--space-3), 2vh, var(--space-8));
-  --fs-term-front: clamp(var(--type-2xl), 6vh, var(--type-5xl));
-  --fs-term-back: clamp(var(--type-xl), 4.5vh, var(--type-4xl));
+  --fs-term-front: clamp(var(--type-3xl), 8vh, var(--type-8xl));
+  --fs-term-back: clamp(var(--type-2xl), 7vh, var(--type-7xl));
   --duration-fast: 150ms;
   --duration-base: 220ms;
   --ease-out: cubic-bezier(0.2, 0, 0, 1);
@@ -297,15 +302,7 @@ header::after,
 .card-pos,
 .alt-terms,
 .gender-tag,
-.pos,
-.fs-nav,
-.fs-nav-btn,
-.fs-counter,
-.autoplay-bar,
-.ap-btn,
-#autoplayStatus,
-.progress,
-.progress-fill {
+.pos {
   display: none !important;
 }
 
@@ -403,6 +400,8 @@ header {
 }
 
 .icon-btn,
+.ap-btn,
+.fs-nav-btn,
 .settings-close,
 .fs-close,
 .swap-btn,
@@ -432,6 +431,7 @@ header {
 }
 
 .icon-btn,
+.ap-btn,
 .settings-close,
 .fs-close,
 .swap-btn,
@@ -442,6 +442,8 @@ header {
 }
 
 .icon-btn svg,
+.ap-btn svg,
+.fs-nav-btn svg,
 .settings-close svg,
 .fs-close svg,
 .swap-btn svg,
@@ -454,6 +456,8 @@ header {
 }
 
 .icon-btn svg path,
+.ap-btn svg path,
+.fs-nav-btn svg path,
 .speak-btn svg path,
 .jp-btn svg path,
 .en-btn svg path {
@@ -573,14 +577,16 @@ header {
 main {
   max-width: var(--content-max);
   margin: var(--space-3) auto var(--space-8);
-  padding: 0 var(--gutter);
-  gap: calc(var(--space-2) * var(--card-scale, 1));
+  padding: 0 var(--gutter) calc(var(--player-height) + var(--space-4));
+  gap: var(--space-2);
   position: relative;
 }
 
 .card {
   position: relative;
-  zoom: var(--card-scale, 1);
+  box-sizing: border-box;
+  height: var(--card-height, 300px);
+  min-height: 0;
   scroll-margin-top: var(--header-approx);
   padding: var(--card-pad);
   border: var(--border-hairline) solid var(--border-subtle) !important;
@@ -619,6 +625,7 @@ main {
   align-items: baseline;
   flex-wrap: wrap;
   gap: var(--space-2);
+  flex: 0 0 auto;
   margin: 0;
   color: var(--text-secondary);
   font-size: var(--type-xs);
@@ -642,6 +649,8 @@ main {
   grid-template-columns: minmax(0, 1fr) var(--border-hairline) minmax(0, 1fr);
   gap: var(--space-3);
   align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .card-divider {
@@ -656,18 +665,25 @@ main {
 .side-block {
   position: relative;
   min-width: 0;
+  min-height: 0;
 }
 
 .side-line {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  height: 100%;
   gap: var(--space-2);
   min-width: 0;
 }
 
 .side-copy {
   flex: 1 1 auto;
+  height: 100%;
   min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .speak-btn,
@@ -702,6 +718,9 @@ main {
 }
 
 .term-text {
+  flex: 0 1 auto;
+  max-height: 100%;
+  overflow: hidden;
   font-family: var(--font-display) !important;
   color: var(--text-primary);
   font-weight: 600;
@@ -727,6 +746,7 @@ main {
 }
 
 .reading {
+  flex: 0 0 auto;
   margin-top: var(--space-1);
   color: var(--text-secondary);
   font-size: var(--reading-size);
@@ -736,6 +756,7 @@ main {
 }
 
 .sense-context {
+  flex: 0 0 auto;
   margin: 0;
   padding: var(--space-2) var(--space-3);
   border: var(--border-hairline) solid var(--border-subtle) !important;
@@ -757,6 +778,7 @@ main {
 }
 
 .card-footer {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -891,6 +913,26 @@ main {
   font-size: var(--type-sm);
 }
 
+.slider-section label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.slider-section output {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-xs);
+}
+
+.slider-section input[type="range"] {
+  width: 100%;
+  min-height: var(--size-touch);
+  accent-color: var(--accent);
+}
+
 .settings-toggle {
   width: 100%;
   justify-content: space-between;
@@ -962,7 +1004,7 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--gutter);
+  padding: calc(var(--gutter) + var(--size-touch)) var(--gutter) var(--gutter);
   overflow: hidden;
 }
 
@@ -989,11 +1031,17 @@ main {
 }
 
 .fs-stage .card {
+  box-sizing: border-box;
   width: 100%;
+  height: 100%;
   max-width: var(--fs-max);
   margin: 0 auto;
   padding: var(--fs-pad);
-  zoom: var(--fs-scale, 1);
+}
+
+.fs-stage .card .card-sides {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .fs-stage .card .card-meta {
@@ -1020,6 +1068,98 @@ main {
   font-size: var(--type-xs);
 }
 
+.fs-nav {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.fs-nav-btn {
+  font-size: var(--type-sm);
+  font-weight: 600;
+}
+
+.fs-counter {
+  min-width: 10ch;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-sm);
+  text-align: center;
+}
+
+.autoplay-bar {
+  display: flex;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--player-height);
+  padding: var(--space-2) var(--gutter);
+  border-top: var(--border-hairline) solid var(--border-subtle);
+  background: var(--surface-raised);
+}
+
+.autoplay-bar.on {
+  border-top-color: var(--accent);
+}
+
+.autoplay-bar.fs-hidden {
+  display: none !important;
+}
+
+.autoplay-bar .pause-icon {
+  display: none;
+}
+
+.autoplay-bar.on .play-icon {
+  display: none;
+}
+
+.autoplay-bar.on .pause-icon {
+  display: block;
+}
+
+.ap-btn {
+  flex: 0 0 var(--size-touch);
+  width: var(--size-touch);
+  height: var(--size-touch);
+  padding: var(--space-2);
+}
+
+#autoplayStatus {
+  min-width: 10ch;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-sm);
+}
+
+.autoplay-bar .progress {
+  flex: 1 1 auto;
+  height: var(--space-1);
+  min-width: var(--space-12);
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.autoplay-bar .progress-fill {
+  height: 100%;
+  width: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  box-shadow: none;
+  transition: width var(--duration-fast) var(--ease-out);
+}
+
 .fs-stage.fs-fade-in {
   animation: redesign-fade var(--duration-base) var(--ease-out);
 }
@@ -1043,6 +1183,8 @@ main {
   .swap-btn:hover,
   .show-more:hover,
   .settings-toggle:hover,
+  .fs-nav-btn:hover,
+  .ap-btn:hover,
   .speak-btn:hover,
   .jp-btn:hover,
   .en-btn:hover {
@@ -1050,6 +1192,17 @@ main {
     border-color: var(--accent);
     color: var(--on-accent);
     transform: none !important;
+  }
+}
+
+@media (max-width: 40em) {
+  .autoplay-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .autoplay-bar .progress {
+    flex-basis: 100%;
   }
 }
 

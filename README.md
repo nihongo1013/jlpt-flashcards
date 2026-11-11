@@ -29,12 +29,17 @@ Japanese-only JLPT deck and now has two decks:
 - An optional English sense gloss or definition can be enabled in settings for
   disambiguation. It is off by default to keep cards compact. RTL text is
   supported where the source language needs it.
-- No status, count, or coverage line. No bottom player in fullscreen, autoplay,
-  or any other mode. Fullscreen reuses the first page card and always fits the
-  viewport.
-- The first screen keeps at least two full cards visible. A different accent
-  theme is chosen at random after a language change; the choice is saved with
-  the other preferences.
+- No status, count, or coverage line. A bottom player on the first page provides
+  play or pause, previous, next, position, and progress. Fullscreen keeps
+  previous and next controls and hides the first-page player.
+- Fullscreen reuses the first page card and always fits the viewport. The first
+  screen keeps at least two full cards visible. A different accent theme is
+  chosen at random after a language change; the choice is saved with the other
+  preferences.
+- Card text auto fits to the available side area, and words are vertically
+  centered with their sound buttons. A Card text size slider sets the maximum
+  font size. A Playback speed slider controls speech rate and the gap between
+  autoplay cards.
 - A sliders settings icon and the original Instagram link mark are restored to
   the header.
 - Web Speech voices for both selected languages. The default voice follows the
@@ -42,12 +47,13 @@ Japanese-only JLPT deck and now has two decks:
   Safari, and equivalent vendor voices elsewhere), while falling back to the
   browser default when no matching voice is installed.
 - Search, category filter, JLPT level filter, shuffle, fullscreen, autoplay,
-  chunked card rendering, and saved language pair and accent preferences.
+  chunked card rendering, and saved language pair, accent, playback speed, and
+  text size preferences.
 - **No runtime network requests for card data. No translation API.**
 
 ## Design system
 
-The interface follows [`DESIGN.md`](DESIGN.md): an editorial, task first dictionary spread built from semantic tokens, six WCAG AA accent themes, compact viewport fitting cards, 44px touch targets, visible focus, reduced motion support, and no decorative emoji or gradients. The guidance is adapted from [UI Skills](https://www.ui-skills.com/), the [AgenticSkills design category](https://agenticskills.io/category/design), and [plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills).
+The interface follows [`DESIGN.md`](DESIGN.md): an editorial, task first dictionary spread built from semantic tokens, six WCAG AA accent themes, auto fitted card text, a first-page player, fullscreen previous and next controls, 44px touch targets, visible focus, reduced motion support, and no decorative emoji or gradients. The guidance is adapted from [UI Skills](https://www.ui-skills.com/), the [AgenticSkills design category](https://agenticskills.io/category/design), and [plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills).
 
 ## Workflow
 
@@ -228,8 +234,8 @@ node --test tests/dictionary_data.test.js
 The tests verify that every language pack exists, every pair has shared
 concepts, generated packs contain no AI-generated source markers, the
 browser-side card builder produces valid two-language cards, all six accent
-themes meet WCAG AA contrast, and the compact card, viewport fit, no bottom
-player, and restored icon contracts hold.
+themes meet WCAG AA contrast, and the compact card, viewport fit, restored
+players, settings sliders, and icon contracts hold.
 
 ## Tech
 
