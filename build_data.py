@@ -35,19 +35,9 @@ def main():
         if not key:
             continue
 
-        item = {
-            "n": int(row.get("n", 0)),
-            "w": row.get("w", ""),
-            "r": row.get("r", ""),
-            "ro": row.get("ro", ""),
-            "m": row.get("m", ""),
-            "h": row.get("h", ""),
-            "te": row.get("te", ""),
-            "c": row.get("c", ""),
-            "p": row.get("p", ""),
-            "lv": lv,
-            "em": row.get("em", ""),
-        }
+        item = {field: row.get(field, "") for field in reader.fieldnames}
+        item["n"] = int(row.get("n", 0) or 0)
+        item["lv"] = lv
         levels[key].append(item)
 
     counts = {k: len(v) for k, v in levels.items()}
@@ -56,7 +46,8 @@ def main():
 
     # Write as JS module
     json_str = json.dumps(levels, ensure_ascii=False, separators=(",", ":"))
-    js_content = f"// Auto-generated from Vocabulary.csv — do not edit manually\n// Generated: {__import__('datetime').datetime.now().isoformat()}\nconst DATA = {json_str};\n"
+    js_content = "// Auto-generated from Vocabulary.csv — do not edit manually\n" + \
+        "const DATA = " + json_str + ";\n"
 
     with open(OUT_PATH, "w", encoding="utf-8") as f:
         f.write(js_content)

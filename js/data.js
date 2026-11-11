@@ -17,7 +17,7 @@ function activeLevelKeys() {
 }
 
 function normalizeCat(c) {
-  c = (c || "").replace(/^N[2-5]\s*/, "").replace(/\s+in\s+N[2-5]$/, "").replace(/^—\s*/, "");
+  c = (c || "").replace(/^N[2-5]\s*/, "").replace(/\s+in\s+N[2-5]$/, "").replace(/\u2014/g, "-").trim();
   return CAT_MAP[c] || c;
 }
 
@@ -97,9 +97,7 @@ function buildJlptCards() {
       badgeClass: level,
       contextTitle: category,
       contextText: "JLPT " + (w.lv || "") + " · " + meaningLanguage.label + " meaning",
-      sourceLabel: "Vocabulary.csv",
       sourceUrl: "Vocabulary.csv",
-      sourceNote: "Legacy JLPT deck",
       pairLabel: "日本語 → " + meaningLanguage.label,
       searchText: normalizeSearch([
         w.w, w.r, w.ro, w.p, w.lv, category, allMeanings,
@@ -181,7 +179,6 @@ async function refreshDeck() {
     if (!DICT_META) {
       $("list").innerHTML = '<div class="empty">Dictionary metadata is missing. Run <code>python3 scripts/build_dictionary_packs.py</code>.</div>';
       setStatus("Dictionary data unavailable");
-      renderDataNote();
       return;
     }
     if (sourceLang === targetLang) {
@@ -203,7 +200,6 @@ async function refreshDeck() {
       $("list").innerHTML = '<div class="empty">Could not load the local dictionary packs.<br><small>' +
         escapeHtml(error.message) + '</small></div>';
       setStatus("Dictionary pack load failed");
-      renderDataNote();
       return;
     }
   } else {
@@ -213,5 +209,4 @@ async function refreshDeck() {
   fillCats();
   filter();
   updateVoiceSelects();
-  renderDataNote();
 }

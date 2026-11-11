@@ -215,9 +215,7 @@ function buildDictionaryCards(fromCode, toCode) {
       badgeClass: "category-tag",
       contextTitle: concept.gloss || concept.word,
       contextText: concept.definition,
-      sourceLabel: "Wiktionary",
       sourceUrl: concept.sourceUrl,
-      sourceNote: "Human-edited dictionary sense",
       pairLabel: (fromLanguage.native || fromLanguage.name) + " → " + (toLanguage.native || toLanguage.name),
       searchText: normalizeSearch([
         concept.word,

@@ -40,15 +40,55 @@ function voicesForLocale(locale) {
   return allVoices.filter(voice => canonicalLang(voice.lang).startsWith(prefix));
 }
 
-function findBestVoiceIndex(voices) {
+function browserVoiceHints() {
+  if (typeof navigator === "undefined") return [];
+  const ua = String(navigator.userAgent || "");
+  const brands = navigator.userAgentData && Array.isArray(navigator.userAgentData.brands)
+    ? navigator.userAgentData.brands.map(item => item.brand || "").join(" ")
+    : "";
+  // Prefer the voice family that the current browser actually ships with.
+  if (/edg(?:e|ios|a)?\//i.test(ua) || /microsoft edge|edge/i.test(brands)) {
+    return ["Microsoft", "Edge"];
+  }
+  if (/opr\//i.test(ua) || /opera/i.test(brands)) {
+    return ["Opera", "Google"];
+  }
+  if (/crios\//i.test(ua) || /chrome\//i.test(ua) || /google chrome|chromium/i.test(brands)) {
+    return ["Google", "Chrome"];
+  }
+  if (/safari\//i.test(ua) && !/chrome\//i.test(ua) && !/crios\//i.test(ua) && !/chromium\//i.test(ua)) {
+    return ["Siri", "Samantha", "Apple", "Alex", "Daniel", "Karen", "Moira",
+      "Tessa", "Veena", "Kyoko", "Otoya", "Agnes", "Fred"];
+  }
+  if (/firefox\//i.test(ua) || /fxios\//i.test(ua) || /firefox/i.test(brands)) {
+    return ["Firefox", "Mozilla"];
+  }
+  return [];
+}
+
+function findBestVoiceIndex(voices, hints) {
   if (!voices || !voices.length) return -1;
-  let index = voices.findIndex(v => v.localService && v.default);
-  if (index >= 0) return index;
-  index = voices.findIndex(v => v.default);
-  if (index >= 0) return index;
-  index = voices.findIndex(v => /enhanced|premium|natural|neural/i.test(v.name || ""));
-  if (index >= 0) return index;
-  return 0;
+  const vendorHints = Array.isArray(hints) ? hints : browserVoiceHints();
+  let bestIndex = 0;
+  let bestScore = -1;
+  voices.forEach((voice, index) => {
+    const name = String(voice.name || "").toLowerCase();
+    let score = 0;
+    for (let hintIndex = 0; hintIndex < vendorHints.length; hintIndex++) {
+      if (name.includes(String(vendorHints[hintIndex]).toLowerCase())) {
+        score += (vendorHints.length - hintIndex) * 1000;
+        break;
+      }
+    }
+    if (voice.default) score += 100;
+    if (voice.localService) score += 50;
+    if (/enhanced|premium|natural|neural|siri/i.test(name)) score += 20;
+    if (score > bestScore) {
+      bestScore = score;
+      bestIndex = index;
+    }
+  });
+  return bestIndex;
 }
 
 function fillVoiceSelect(select, voices, autoLabel) {
@@ -76,30 +116,19 @@ function updateVoiceSelects() {
 
   const frontLabel = $("frontVoiceLabel");
   const backLabel = $("backVoiceLabel");
-  if (frontLabel) frontLabel.textContent = "🗣️ " + front.label + " voice (front)";
-  if (backLabel) backLabel.textContent = "🗣️ " + back.label + " voice (back)";
+  if (frontLabel) frontLabel.textContent = front.label + " voice";
+  if (backLabel) backLabel.textContent = back.label + " voice";
 
-  fillVoiceSelect(
-    $("frontVoice"),
-    voicesBySide.front,
-    voicesBySide.front.length ? front.label + " voice (auto)" : "No " + front.label + " voice — browser default"
-  );
-  fillVoiceSelect(
-    $("backVoice"),
-    voicesBySide.back,
-    voicesBySide.back.length ? back.label + " voice (auto)" : "No " + back.label + " voice — browser default"
-  );
+  fillVoiceSelect($("frontVoice"), voicesBySide.front, "Browser default");
+  fillVoiceSelect($("backVoice"), voicesBySide.back, "Browser default");
 
   const notice = $("voiceNotice");
   if (notice) {
     if (!canSpeak()) {
-      notice.textContent = "This browser does not expose speech synthesis.";
+      notice.textContent = "Speech synthesis unavailable.";
       notice.classList.remove("hidden");
-    } else if (!allVoices.length) {
-      notice.textContent = "Browser voices are still loading; speaker buttons will still try the language tag.";
-      notice.classList.remove("hidden");
-    } else if (!voicesBySide.front.length || !voicesBySide.back.length) {
-      notice.textContent = "No installed voice for one of these languages. The browser will use its default voice with the correct language tag.";
+    } else if (!allVoices.length || !voicesBySide.front.length || !voicesBySide.back.length) {
+      notice.textContent = "Using browser default voice.";
       notice.classList.remove("hidden");
     } else {
       notice.textContent = "";

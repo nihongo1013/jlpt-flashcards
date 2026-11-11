@@ -201,7 +201,6 @@ function init() {
     console.error(error);
     setStatus("Could not initialize the flashcard deck.");
   });
-  startSakura();
 }
 
 init();

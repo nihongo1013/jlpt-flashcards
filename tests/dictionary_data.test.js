@@ -135,10 +135,111 @@ test("HTML exposes the two language fields, new name, and new modules", () => {
   assert.ok(!html.includes("JLPT Flashcards"));
   for (const id of [
     "deckMode", "sourceLang", "targetLang", "swapLangs", "langSelect",
-    "frontVoice", "backVoice", "showContext", "dataNote", "pairFields",
+    "frontVoice", "backVoice", "showContext", "pairFields",
   ]) {
     assert.ok(html.includes(`id="${id}"`), `missing #${id}`);
   }
   assert.ok(html.includes("data/dictionary/meta.js"));
   assert.ok(html.includes("js/dictionary.js"));
+});
+
+test("frontend copy stays minimal and deck label has no CSV annotation", () => {
+  const html = read("index.html");
+  const ui = read("js/ui.js");
+  const dictionary = read("js/dictionary.js");
+  const forbidden = [
+    "white peacock", "Cruise Ship Resort", "Wiktionary", "Human-edited dictionary sense",
+    "109 languages · authentic dictionary senses · no translation API", "Front / prompt",
+    "Back / answer", "Front ·", "Back ·", "legacy CSV", "id=\"dataNote\"",
+    "brand-tagline", "OFFLINE DICTIONARY DATA", "LEGACY JLPT CSV",
+  ];
+  for (const phrase of forbidden) {
+    assert.ok(!html.includes(phrase), `unwanted HTML copy: ${phrase}`);
+    assert.ok(!ui.includes(phrase), `unwanted UI copy: ${phrase}`);
+  }
+  assert.ok(!dictionary.includes("Human-edited dictionary sense"));
+  assert.ok(!dictionary.includes("sourceNote"));
+  assert.ok(!dictionary.includes("sourceLabel"));
+  assert.ok(!read("js/data.js").includes("Legacy JLPT deck"));
+  assert.ok(!ui.includes("card-source"));
+  assert.match(html, /<option value="jlpt">JLPT Japanese<\/option>/);
+  assert.ok(!html.includes("JLPT Japanese (legacy CSV)"));
+});
+
+test("fullscreen and autoplay reuse the first-page card and hide selectors", () => {
+  const html = read("index.html");
+  const css = read("css/styles.css");
+  const ui = read("js/ui.js");
+  assert.match(html, /class="fs-stage" id="fsCard"/);
+  assert.ok(!css.includes(".fs-card"));
+  assert.ok(!ui.includes("fs-mode"));
+  assert.match(ui, /const rootClass = "card" \+ \(index === selectedCardIndex \? " active" : ""\);/);
+  assert.match(ui, /function renderFSCard[\s\S]*renderCardContent\(pool\[index\], index, true\)/);
+  assert.match(ui, /bar\.classList\.toggle\("hidden", autoplayActive \|\| fullscreen\)/);
+  for (const name of ["startAutoplay", "stopAutoplay", "toggleFullscreen", "closeFullscreen"]) {
+    const match = ui.match(new RegExp(`function ${name}\\(\\) \\{([\\s\\S]*?)\\n\\}`));
+    assert.ok(match, `missing ${name}`);
+    assert.match(match[1], /updatePlaybackChrome\(\)/);
+  }
+});
+
+test("design skills are integrated into the frontend layer", () => {
+  const html = read("index.html");
+  const css = read("css/redesign.css");
+  const legacyCss = read("css/styles.css");
+  const design = read("DESIGN.md");
+  const ui = read("js/ui.js");
+  const app = read("js/app.js");
+  const config = read("js/config.js");
+  const speech = read("js/speech.js");
+  const emoji = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2B00}-\u{2BFF}]/u;
+  for (const [name, text] of Object.entries({ html, css, legacyCss, design, ui, app, config, speech })) {
+    assert.ok(!emoji.test(text), `decorative glyph in ${name}`);
+    assert.ok(!text.includes("\u2014"), `em dash in ${name}`);
+    assert.ok(!text.includes("\u2013"), `en dash in ${name}`);
+  }
+  assert.ok(html.includes("css/redesign.css"));
+  assert.ok(css.includes("--surface-page"));
+  assert.ok(css.includes("--font-display"));
+  assert.ok(css.includes("prefers-reduced-motion: reduce"));
+  assert.ok(css.includes("prefers-color-scheme: dark"));
+  assert.ok(design.includes("Operate"));
+  assert.ok(design.includes("www.ui-skills.com"));
+  assert.ok(design.includes("agenticskills.io/category/design"));
+  assert.ok(design.includes("plugin87/ux-ui-agent-skills"));
+  assert.ok(ui.includes("card-meta"));
+  assert.ok(ui.includes("card-index"));
+  assert.ok(ui.includes("side-head"));
+  assert.ok(!app.includes("startSakura"));
+  assert.ok(!ui.includes("createSakuraPetal"));
+});
+
+const speechContext = userAgent => {
+  const speechVm = vm.createContext({
+    navigator: { userAgent },
+    document: {},
+    console,
+  });
+  vm.runInContext(read("js/speech.js"), speechVm, { filename: "speech.js" });
+  return expression => vm.runInContext(expression, speechVm);
+};
+
+test("default voice follows the user's browser family", () => {
+  const voices = [
+    { name: "Microsoft Aria Natural", lang: "en-US", default: true, localService: false },
+    { name: "Google US English", lang: "en-US", default: false, localService: true },
+    { name: "Siri Voice 5", lang: "en-US", default: false, localService: true },
+    { name: "Mozilla en-US", lang: "en-US", default: false, localService: true },
+    { name: "Opera Voice", lang: "en-US", default: false, localService: true },
+  ];
+  const pick = (ua, expectedName) => {
+    const evaluate = speechContext(ua);
+    const index = evaluate(`findBestVoiceIndex(${JSON.stringify(voices)})`);
+    assert.equal(voices[index].name, expectedName, ua);
+  };
+  pick("Mozilla/5.0 Chrome/130.0.0.0 Safari/537.36", "Google US English");
+  pick("Mozilla/5.0 Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0", "Microsoft Aria Natural");
+  pick("Mozilla/5.0 Version/18.0 Safari/605.1.15", "Siri Voice 5");
+  pick("Mozilla/5.0 Firefox/132.0", "Mozilla en-US");
+  pick("Mozilla/5.0 Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0", "Opera Voice");
 });

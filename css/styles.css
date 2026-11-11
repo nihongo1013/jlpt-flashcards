@@ -58,7 +58,7 @@
   
   /* Sakura Branch Decoration */
   header::before{
-    content:"🌸";
+    content: none;
     position:absolute;
     top:8px;
     right:120px;
@@ -119,7 +119,7 @@
   }
   
   .level-badge::before{
-    content:"🎌";
+    content: none;
     font-size:20px;
   }
   
@@ -212,7 +212,7 @@
   }
   
   #status::before{
-    content:"📚";
+    content: none;
     font-size:16px;
   }
   
@@ -251,7 +251,7 @@
   
   /* Sakura Petal Decoration */
   .card::after{
-    content:"🌸";
+    content: none;
     position:absolute;
     top:16px;
     left:16px;
@@ -545,7 +545,7 @@
   }
   
   .empty::before{
-    content:"🌸";
+    content: none;
     display:block;
     font-size:48px;
     margin-bottom:16px;
@@ -938,7 +938,7 @@
   }
   
   .fs-title::before {
-    content: "🌸";
+    content: none;
   }
   
   .fs-nav {
@@ -1038,192 +1038,6 @@
   
   .fullscreen-overlay.on{
     display:flex;
-  }
-  
-  /* Fullscreen Card */
-  .fs-card{
-    background:white;
-    border:3px solid var(--border);
-    border-radius:28px;
-    padding:40px 48px;
-    box-shadow:0 12px 48px rgba(139,90,63,0.2);
-    max-width:900px;
-    width:90vw;
-    max-height:80vh;
-    position:relative;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    overflow:visible;
-  }
-  
-  .fs-card::before{
-    content:"";
-    position:absolute;
-    top:0;left:0;right:0;
-    height:6px;
-    background:linear-gradient(90deg, var(--brand-red), var(--sakura), var(--brand-red));
-    border-radius:28px 28px 0 0;
-  }
-  
-  .fs-card::after{
-    content:"🌸";
-    position:absolute;
-    top:24px;
-    left:24px;
-    font-size:24px;
-    opacity:0.2;
-    pointer-events:none;
-  }
-  
-  .fs-card .pos{
-    position:absolute;
-    bottom:20px;
-    right:28px;
-    font-size:13px;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--text-secondary);
-    font-weight:700;
-    background:var(--sakura-light);
-    padding:6px 14px;
-    border-radius:10px;
-  }
-  
-  .fs-card .jp-row{
-    display:flex;
-    align-items:center;
-    gap:28px;
-    margin-bottom:12px;
-  }
-  
-  .fs-card .jp-btn{
-    width:56px;
-    height:56px;
-    border-radius:50%;
-    border:3px solid var(--brand-red);
-    background:linear-gradient(135deg, white 0%, var(--sakura-light) 100%);
-    color:var(--brand-red);
-    font-size:26px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-    box-shadow:0 4px 16px rgba(198,40,40,0.3);
-    transition:all 0.3s;
-  }
-  
-  .fs-card .jp-btn:hover{
-    transform:scale(1.1) rotate(5deg);
-    box-shadow:0 6px 24px rgba(198,40,40,0.4);
-    background:var(--brand-red);
-  }
-  
-  .fs-card .jp-btn:hover svg path{
-    fill:white;
-  }
-  
-  .fs-card .jp-btn svg path{
-    fill:var(--brand-red);
-    transition:fill 0.3s;
-  }
-  
-  .fs-card .jp-btn.speaking{
-    animation:buttonPulse 1.5s ease-in-out infinite;
-    background:var(--brand-red);
-  }
-  
-  .fs-card .jp-btn.speaking svg path{
-    fill:white;
-  }
-  
-  .fs-card .jp-t{
-    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
-    font-size:clamp(36px,6vw,72px);
-    font-weight:800;
-    line-height:1.2;
-    color:var(--text-primary);
-    text-shadow:2px 2px 4px rgba(41,37,34,0.08);
-  }
-  
-  .fs-card .ro-row{
-    margin:8px 0 24px 84px;
-  }
-  
-  .fs-card .ro-t{
-    font-size:clamp(18px,2.8vw,32px);
-    color:var(--text-secondary);
-    font-style:italic;
-    font-weight:500;
-  }
-  
-  .fs-card .en-row{
-    display:flex;
-    align-items:center;
-    gap:28px;
-  }
-  
-  .fs-card .en-btn{
-    width:52px;
-    height:52px;
-    border-radius:50%;
-    border:3px solid var(--blue);
-    background:linear-gradient(135deg, white 0%, #EDE7F6 100%);
-    color:var(--blue);
-    font-size:24px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-    box-shadow:0 4px 16px rgba(93,78,117,0.3);
-    transition:all 0.3s;
-  }
-  
-  .fs-card .en-btn:hover{
-    transform:scale(1.1) rotate(-5deg);
-    box-shadow:0 6px 24px rgba(93,78,117,0.4);
-    background:var(--blue);
-  }
-  
-  .fs-card .en-btn:hover svg path{
-    fill:white;
-  }
-  
-  .fs-card .en-btn svg path{
-    fill:var(--blue);
-    transition:fill 0.3s;
-  }
-  
-  .fs-card .en-btn.speaking{
-    animation:buttonPulseBlue 1.5s ease-in-out infinite;
-    background:var(--blue);
-  }
-  
-  .fs-card .en-btn.speaking svg path{
-    fill:white;
-  }
-  
-  .fs-card .en-t{
-    font-size:clamp(28px,4.5vw,48px);
-    font-weight:700;
-    color:var(--blue);
-    line-height:1.3;
-  }
-  
-  .fs-card .hi-t{
-    font-size:clamp(24px,4vw,42px);
-    font-weight:700;
-    color:var(--brand-red);
-    line-height:1.3;
-  }
-
-  .fs-card .te-t{
-    font-size:clamp(24px,4vw,42px);
-    font-weight:700;
-    color:#00796B;
-    line-height:1.3;
   }
   
   /* Fullscreen Navigation */
@@ -1408,57 +1222,21 @@
   
   /* Mobile Fullscreen */
   @media(max-width:700px){
-    .fs-card{
-      padding:28px 24px;
-      width:95vw;
-      max-height:85vh;
-    }
-    
-    .fs-card .jp-t{
-      font-size:clamp(32px,8vw,56px);
-    }
-    
-    .fs-card .en-t,.fs-card .hi-t,.fs-card .te-t{
-      font-size:clamp(22px,6vw,38px);
-    }
-    
-    .fs-card .jp-btn{
-      width:48px;
-      height:48px;
-    }
-    
-    .fs-card .en-btn{
-      width:44px;
-      height:44px;
-    }
-    
     .fs-nav{
       gap:16px;
       margin-top:24px;
     }
-    
+
     .fs-nav-btn{
       padding:10px 24px;
       font-size:14px;
     }
-    
+
     .autoplay-bar{
       padding:12px 16px;
     }
-    
+
     .ap-btn{
-      width:40px;
-      height:40px;
-    }
-  }
-  
-  @media(max-width:480px){
-    .fs-card .jp-btn{
-      width:44px;
-      height:44px;
-    }
-    
-    .fs-card .en-btn{
       width:40px;
       height:40px;
     }
@@ -1845,9 +1623,7 @@
 }
 
 .card .jp-row,
-.card .en-row,
-.fs-card .fs-mode .jp-row,
-.fs-card .fs-mode .en-row {
+.card .en-row {
   align-items: flex-start;
   padding-right: 0;
 }
@@ -2103,43 +1879,6 @@
   accent-color: var(--brand-red);
 }
 
-/* The fullscreen container is already a card; avoid a nested card frame. */
-.fs-card .fs-mode {
-  padding: 0;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  animation: none;
-}
-
-.fs-card .fs-mode::before,
-.fs-card .fs-mode::after {
-  content: none;
-}
-
-.fs-card .fs-mode:hover {
-  transform: none;
-  box-shadow: none;
-  border-color: transparent;
-}
-
-.fs-card .fs-mode.active {
-  box-shadow: none;
-}
-
-.fs-card .fs-mode .side-label {
-  margin-left: 72px;
-  font-size: 12px;
-}
-
-.fs-card .fs-mode .back-block .side-label {
-  margin-left: 68px;
-}
-
-.fs-card .fs-mode .card-footer {
-  margin-top: 24px;
-}
-
 @media (max-width: 900px) {
   .pair-fields {
     flex-basis: 100%;
@@ -2169,15 +1908,11 @@
     min-width: 130px;
   }
   .side-label,
-  .back-block .side-label,
-  .fs-card .fs-mode .side-label,
-  .fs-card .fs-mode .back-block .side-label {
+  .back-block .side-label {
     margin-left: 0;
   }
   .card .jp-row,
-  .card .en-row,
-  .fs-card .fs-mode .jp-row,
-  .fs-card .fs-mode .en-row {
+  .card .en-row {
     gap: 12px;
   }
   .card-footer {
@@ -2210,5 +1945,30 @@
   .show-more:hover {
     background: var(--brand-red);
     color: #1a1714;
+  }
+}
+
+/* Fullscreen is just a stage around the exact same .card component used on
+   the first page; no separate fullscreen card typography or chrome. */
+.fs-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: min(900px, 90vw);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.fs-stage .card {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+@media (max-width: 700px) {
+  .fs-stage {
+    width: 95vw;
+    max-height: 85vh;
   }
 }

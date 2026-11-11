@@ -4,10 +4,10 @@ A static flashcard app for learning between two languages. It grew from a
 Japanese-only JLPT deck and now has two decks:
 
 1. **Dictionary pairs** (default): choose *any two* languages from 109 bundled
-   languages in the two front/back fields. Cards are built from **human-edited
-   dictionary senses**, not from a translation API or a translation model.
-2. **JLPT Japanese** (legacy): the original N5–N1 deck from `Vocabulary.csv`,
-   with English, Hindi, and Telugu meaning columns.
+   languages. Cards are built from **human-edited dictionary senses**, not from
+   a translation API or a translation model.
+2. **JLPT Japanese**: the original N5–N1 deck from `Vocabulary.csv`, with
+   complete English and Hindi meaning columns.
 
 ## Features
 
@@ -26,11 +26,21 @@ Japanese-only JLPT deck and now has two decks:
   gloss/definition for disambiguation.
 - Alternative dictionary terms, romanizations, kana readings, grammatical
   gender tags, and RTL text where the source dictionary provides them.
-- Web Speech voices for both the front and back languages, with an automatic
-  browser fallback when no voice is installed.
+- Web Speech voices for both selected languages. The default voice follows the
+  browser family (Google on Chrome/Chromium, Microsoft on Edge, Siri/Apple on
+  Safari, and equivalent vendor voices elsewhere), while falling back to the
+  browser default when no matching voice is installed.
 - Search, category filter, JLPT level filter, shuffle, fullscreen, autoplay,
   chunked card rendering, and saved language-pair preferences.
 - **No runtime network requests for card data. No translation API.**
+
+## Design system
+
+The interface follows [`DESIGN.md`](DESIGN.md): an editorial, task first dictionary spread built from semantic tokens, with WCAG AA contrast, 44px touch targets, visible focus, reduced motion support, and no decorative emoji or gradients. The guidance is adapted from [UI Skills](https://www.ui-skills.com/), the [AgenticSkills design category](https://agenticskills.io/category/design), and [plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills).
+
+## Workflow
+
+After coding, commit on the active branch, push it, open a PR to `main`, and merge that PR. Do not leave completed work only in the working tree.
 
 ## Quick start
 
@@ -132,12 +142,13 @@ The builder writes:
 
 Do not hand-edit generated files; change the builder and rebuild.
 
-## Legacy JLPT deck
+## JLPT Japanese deck
 
-`Vocabulary.csv` remains the source of truth for the Japanese JLPT deck. It is
-shown as-is, including historical language fills that were added before this
-dictionary pipeline existed. No runtime translation is performed for this deck;
-cards with a missing meaning column fall back to English and are labelled.
+`Vocabulary.csv` remains the source of truth for the Japanese JLPT deck. Only
+complete meaning-language columns are kept: English and Hindi. The incomplete
+Telugu column was removed from both the CSV and the generated JS data. Hindi is
+complete across all 6,283 rows, so it remains available. No runtime translation
+is performed for this deck.
 
 Rebuild the legacy JS data after editing the CSV:
 
@@ -158,7 +169,6 @@ Do not reintroduce translation APIs for dictionary data.
 | `ro`   | Romaji |
 | `m`    | English meaning |
 | `h`    | Hindi meaning |
-| `te`   | Telugu meaning |
 | `c`    | Category |
 | `p`    | Part of speech |
 | `lv`   | JLPT level (N5–N1) |
@@ -171,15 +181,15 @@ Do not reintroduce translation APIs for dictionary data.
 ├── index.html
 ├── css/styles.css
 ├── js/
-│   ├── config.js             # Legacy language registry + shared helpers
+│   ├── config.js             # JLPT meaning-language registry + shared helpers
 │   ├── state.js              # App state
 │   ├── dictionary.js         # Local pack loader + concept-aligned card builder
 │   ├── data.js               # Deck construction and filtering
-│   ├── speech.js             # Two-language voice selection and playback
+│   ├── speech.js             # Browser-aware voice selection and playback
 │   ├── ui.js                 # Cards, settings, fullscreen, autoplay
 │   └── app.js                # Event wiring, saved settings, startup
 ├── data/
-│   ├── vocabulary.js         # Generated legacy JLPT data
+│   ├── vocabulary.js         # Generated JLPT Japanese data
 │   └── dictionary/
 │       ├── meta.js           # Generated dictionary metadata
 │       ├── packs/*.js        # Generated per-language packs
@@ -191,7 +201,7 @@ Do not reintroduce translation APIs for dictionary data.
 │   ├── test_dictionary_packs.py
 │   └── dictionary_data.test.js
 ├── build_data.py             # Rebuilds data/vocabulary.js from the CSV
-├── Vocabulary.csv            # Legacy JLPT source of truth
+├── Vocabulary.csv            # JLPT Japanese source of truth
 └── README.md
 ```
 
