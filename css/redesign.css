@@ -142,6 +142,7 @@
   --player-height: 64px;
   --fs-nav-reserve: 112px;
   --card-height: 300px;
+  --card-size-scale: 1;
   --fs-stage-height: calc(100vh - var(--fs-nav-reserve));
   --card-pad: clamp(var(--space-2), 1.2vh, var(--space-3));
   --card-gap: clamp(var(--space-1), 0.8vh, var(--space-2));
@@ -596,7 +597,7 @@ main {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   gap: var(--card-gap);
   animation: none !important;
   transition: border-color var(--duration-fast) var(--ease-out),
@@ -645,21 +646,35 @@ main {
 }
 
 .card-sides {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--border-hairline) minmax(0, 1fr);
-  gap: var(--space-3);
+  display: flex;
+  flex-direction: column;
   align-items: stretch;
+  justify-content: center;
+  gap: var(--space-2);
   flex: 1 1 auto;
   min-height: 0;
 }
 
 .card-divider {
-  width: var(--border-hairline);
-  height: 100%;
+  flex: 0 0 var(--border-hairline);
+  width: 100%;
+  height: var(--border-hairline);
   margin: 0;
   padding: 0;
   border: 0;
   background: var(--border-subtle);
+}
+
+[data-layout="wide"] .card-sides {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--border-hairline) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+[data-layout="wide"] .card-divider {
+  width: var(--border-hairline);
+  height: 100%;
+  flex: none;
 }
 
 .side-block {
@@ -672,7 +687,7 @@ main {
   display: flex;
   align-items: center;
   height: 100%;
-  gap: var(--space-2);
+  gap: clamp(14px, 1.5vw, 24px);
   min-width: 0;
 }
 
@@ -1214,10 +1229,71 @@ main {
   .pair-bar {
     flex-wrap: nowrap;
   }
+}
 
-  .card-sides {
-    gap: var(--space-4);
-  }
+/* Small portrait screens have their own card logic: one language below the
+   other, with the speaker button and word or meaning on one line. */
+[data-layout="mobile"] .card {
+  padding: var(--space-2) var(--space-3);
+  gap: var(--space-1);
+}
+
+[data-layout="mobile"] .card-sides {
+  flex: 1 1 auto;
+  gap: var(--space-2);
+}
+
+[data-layout="mobile"] .side-block {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+[data-layout="mobile"] .side-line {
+  min-height: var(--size-touch);
+  gap: var(--space-3);
+}
+
+[data-layout="mobile"] .side-copy {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+  height: 100%;
+  min-height: 0;
+}
+
+[data-layout="mobile"] .term-text {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+[data-layout="mobile"] .reading {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 0;
+  text-align: right;
+}
+
+[data-layout="mobile"] .card-meta {
+  gap: var(--space-2);
+  font-size: var(--type-2xs);
+}
+
+[data-layout="mobile"] .card-footer {
+  padding-top: 0;
+}
+
+[data-layout="mobile"] .fs-stage .card {
+  height: 100%;
+}
+
+[data-layout="wide"] .card-sides {
+  gap: var(--space-4);
 }
 
 @media (max-height: 40em) {

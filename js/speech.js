@@ -167,7 +167,7 @@ function pickVoice(selectId, voices) {
 function makeUtterance(card, side) {
   const data = card && card[side];
   if (!data) return null;
-  const text = stripTilde(data.speakText || data.word || "");
+  const text = cleanSpeechText(stripTilde(data.speakText || data.word || ""));
   if (!text) return null;
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = data.locale || "en-US";
