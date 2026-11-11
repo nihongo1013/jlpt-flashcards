@@ -6,7 +6,7 @@ Japanese-only JLPT deck and now has two decks:
 1. **Dictionary pairs** (default): choose *any two* languages from 109 bundled
    languages. Cards are built from **human-edited dictionary senses**, not from
    a translation API or a translation model.
-2. **JLPT Japanese**: the original N5–N1 deck from `Vocabulary.csv`, with
+2. **JLPT Japanese**: the original N5 to N1 deck from `Vocabulary.csv`, with
    complete English and Hindi meaning columns.
 
 ## Features
@@ -22,21 +22,32 @@ Japanese-only JLPT deck and now has two decks:
 - A card appears only when **both** selected languages have a human-edited
   dictionary entry for the same Wiktionary sense. The app never translates one
   side into the other.
-- Each card links to the source Wiktionary entry and can show the English sense
-  gloss/definition for disambiguation.
-- Alternative dictionary terms, romanizations, kana readings, grammatical
-  gender tags, and RTL text where the source dictionary provides them.
+- Compact cards show the word, its reading when needed, the paired sense, an
+  ordinal, the pair label, and one category or part of speech tag. Language
+  names are not repeated beside each side, and duplicate part of speech text is
+  omitted.
+- An optional English sense gloss or definition can be enabled in settings for
+  disambiguation. It is off by default to keep cards compact. RTL text is
+  supported where the source language needs it.
+- No status, count, or coverage line. No bottom player in fullscreen, autoplay,
+  or any other mode. Fullscreen reuses the first page card and always fits the
+  viewport.
+- The first screen keeps at least two full cards visible. A different accent
+  theme is chosen at random after a language change; the choice is saved with
+  the other preferences.
+- A sliders settings icon and the original Instagram link mark are restored to
+  the header.
 - Web Speech voices for both selected languages. The default voice follows the
   browser family (Google on Chrome/Chromium, Microsoft on Edge, Siri/Apple on
   Safari, and equivalent vendor voices elsewhere), while falling back to the
   browser default when no matching voice is installed.
 - Search, category filter, JLPT level filter, shuffle, fullscreen, autoplay,
-  chunked card rendering, and saved language-pair preferences.
+  chunked card rendering, and saved language pair and accent preferences.
 - **No runtime network requests for card data. No translation API.**
 
 ## Design system
 
-The interface follows [`DESIGN.md`](DESIGN.md): an editorial, task first dictionary spread built from semantic tokens, with WCAG AA contrast, 44px touch targets, visible focus, reduced motion support, and no decorative emoji or gradients. The guidance is adapted from [UI Skills](https://www.ui-skills.com/), the [AgenticSkills design category](https://agenticskills.io/category/design), and [plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills).
+The interface follows [`DESIGN.md`](DESIGN.md): an editorial, task first dictionary spread built from semantic tokens, six WCAG AA accent themes, compact viewport fitting cards, 44px touch targets, visible focus, reduced motion support, and no decorative emoji or gradients. The guidance is adapted from [UI Skills](https://www.ui-skills.com/), the [AgenticSkills design category](https://agenticskills.io/category/design), and [plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills).
 
 ## Workflow
 
@@ -99,7 +110,7 @@ full attribution, changes, and licence notice. Derived dictionary data is
 The two language fields start with a **Popular languages** group containing 82
 widely used languages. It includes the major global/UN languages, the most
 common European languages, and major Asian, Indian, Middle-Eastern, African,
-and Austronesian/Oceanic languages — for example:
+and Austronesian/Oceanic languages, for example:
 
 - English, French, Spanish, Arabic, Russian, Chinese (Simplified and Traditional)
 - German, Portuguese, Italian, Dutch, Polish, Swedish, Norwegian, Danish,
@@ -135,10 +146,10 @@ python3 scripts/build_dictionary_packs.py --source /path/to/Multilingualism-main
 
 The builder writes:
 
-- `data/dictionary/meta.js` — language registry, concepts, categories, provenance
-- `data/dictionary/packs/<code>.js` — one compact pack per language
-- `data/dictionary/ATTRIBUTION.md` — attribution and change log
-- `data/dictionary/SOURCE-LICENSE.txt` — upstream licence notice
+- `data/dictionary/meta.js`: language registry, concepts, categories, provenance
+- `data/dictionary/packs/<code>.js`: one compact pack per language
+- `data/dictionary/ATTRIBUTION.md`: attribution and change log
+- `data/dictionary/SOURCE-LICENSE.txt`: upstream licence notice
 
 Do not hand-edit generated files; change the builder and rebuild.
 
@@ -171,7 +182,7 @@ Do not reintroduce translation APIs for dictionary data.
 | `h`    | Hindi meaning |
 | `c`    | Category |
 | `p`    | Part of speech |
-| `lv`   | JLPT level (N5–N1) |
+| `lv`   | JLPT level (N5 to N1) |
 | `em`   | Emoji |
 
 ## Project structure
@@ -179,7 +190,9 @@ Do not reintroduce translation APIs for dictionary data.
 ```text
 <repository root>/
 ├── index.html
-├── css/styles.css
+├── css/styles.css                 # Legacy base layer
+├── css/redesign.css               # Semantic design system layer
+├── DESIGN.md                     # Design rules and measured contrast
 ├── js/
 │   ├── config.js             # JLPT meaning-language registry + shared helpers
 │   ├── state.js              # App state
@@ -213,8 +226,10 @@ node --test tests/dictionary_data.test.js
 ```
 
 The tests verify that every language pack exists, every pair has shared
-concepts, generated packs contain no AI-generated source markers, and the
-browser-side card builder produces valid two-language cards.
+concepts, generated packs contain no AI-generated source markers, the
+browser-side card builder produces valid two-language cards, all six accent
+themes meet WCAG AA contrast, and the compact card, viewport fit, no bottom
+player, and restored icon contracts hold.
 
 ## Tech
 

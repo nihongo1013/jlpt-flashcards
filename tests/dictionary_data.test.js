@@ -209,9 +209,52 @@ test("design skills are integrated into the frontend layer", () => {
   assert.ok(design.includes("plugin87/ux-ui-agent-skills"));
   assert.ok(ui.includes("card-meta"));
   assert.ok(ui.includes("card-index"));
-  assert.ok(ui.includes("side-head"));
+  assert.ok(ui.includes("card-pair"));
+  assert.ok(ui.includes("term-text"));
+  assert.ok(ui.includes("fitCardsToViewport"));
+  assert.ok(ui.includes("fitFullscreenCard"));
+  assert.ok(!ui.includes("side-head"));
+  assert.ok(!ui.includes("side-label"));
+  assert.ok(!ui.includes("card-pos"));
+  assert.ok(!ui.includes("setStatus"));
   assert.ok(!app.includes("startSakura"));
   assert.ok(!ui.includes("createSakuraPetal"));
+});
+
+test("cards stay compact, fit the viewport, and rotate accents", () => {
+  const html = read("index.html");
+  const css = read("css/redesign.css");
+  const ui = read("js/ui.js");
+  const app = read("js/app.js");
+  assert.ok(!html.includes('id="status"'));
+  assert.ok(!html.includes("autoplay-bar"));
+  assert.ok(!html.includes("fs-nav"));
+  assert.ok(!ui.includes("autoplayBar"));
+  assert.ok(!ui.includes("autoplayStatus"));
+  assert.ok(!ui.includes("progressFill"));
+  assert.ok(!ui.includes("fsCounter"));
+  assert.ok(html.includes("settings-icon"));
+  assert.ok(html.includes('id="instaBtn"'));
+  assert.ok(html.includes("https://www.instagram.com/nihongo_1013"));
+  assert.ok(css.includes("--card-scale"));
+  assert.ok(css.includes("--fs-scale"));
+  assert.ok(css.includes('--visible-card-max: calc((100vh - var(--header-approx) - var(--space-4)) / 2)'));
+  assert.ok(css.includes('gap: calc(var(--space-2) * var(--card-scale, 1))'));
+  assert.ok(!css.includes('max-height: var(--visible-card-max)'));
+  assert.ok(!css.includes('max-height: 100%'));
+  assert.ok(css.includes(':root[data-accent="oxide"]'));
+  assert.ok(css.includes(':root[data-accent="indigo"]'));
+  assert.ok(css.includes(':root[data-accent="plum"]'));
+  assert.ok(css.includes(':root[data-accent="teal"]'));
+  assert.ok(css.includes(':root[data-accent="umber"]'));
+  assert.ok(app.includes("ACCENT_KEYS"));
+  assert.ok(app.includes("applyRandomAccent"));
+  assert.ok(app.includes("accent: currentAccent"));
+  assert.match(ui, /const ordinal = String\(index \+ 1\);/);
+  assert.match(ui, /second\.bottom - first\.top/);
+  assert.match(ui, /stage\.clientHeight/);
+  assert.match(read("js/state.js"), /let showSenseContext = false;/);
+  assert.ok(!html.includes('id="showContext" checked'));
 });
 
 const speechContext = userAgent => {

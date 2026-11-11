@@ -197,10 +197,7 @@ function setSpeakingState(index, side, on) {
 function speakCardSide(index, side) {
   const card = pool[index];
   if (!card) return;
-  if (!canSpeak()) {
-    setStatus("Speech synthesis is not supported by this browser.");
-    return;
-  }
+  if (!canSpeak()) return;
   const utterance = makeUtterance(card, side);
   if (!utterance) return;
   speechSynthesis.cancel();

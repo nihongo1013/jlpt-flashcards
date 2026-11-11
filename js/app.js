@@ -1,6 +1,14 @@
 /* App bootstrap and event wiring */
 const SETTINGS_KEY = "lingua-pairs-settings-v2";
 const LEGACY_SETTINGS_KEY = "jlpt-flashcards-settings-v2";
+const ACCENT_KEYS = ["moss", "oxide", "indigo", "plum", "teal", "umber"];
+let currentAccent = document.documentElement.dataset.accent || "moss";
+
+function applyRandomAccent() {
+  const choices = ACCENT_KEYS.filter(key => key !== currentAccent);
+  currentAccent = choices[Math.floor(Math.random() * choices.length)];
+  document.documentElement.dataset.accent = currentAccent;
+}
 
 function readSettings() {
   try {
@@ -22,6 +30,7 @@ function persistSettings() {
       level: $("lv").value,
       shuffled: shuffled,
       showSenseContext: showSenseContext,
+      accent: currentAccent,
     }));
   } catch (_) {
     /* localStorage can be unavailable when opened directly as file:// */
@@ -44,7 +53,11 @@ function applyStoredSettings() {
   if (LANGUAGES[saved.selectedLang]) selectedLang = saved.selectedLang;
   if (saved.level) $("lv").value = saved.level;
   shuffled = !!saved.shuffled;
-  showSenseContext = saved.showSenseContext !== false;
+  showSenseContext = saved.showSenseContext === true;
+  if (ACCENT_KEYS.includes(saved.accent)) {
+    currentAccent = saved.accent;
+    document.documentElement.dataset.accent = currentAccent;
+  }
 
   // Optional shareable pair URL, e.g. ?from=ja&to=fr
   try {
@@ -91,6 +104,7 @@ function chooseDifferentSource(previousTarget) {
 function bindDeckEvents() {
   $("deckMode").addEventListener("change", event => {
     deckMode = event.target.value === "jlpt" ? "jlpt" : "dictionary";
+    applyRandomAccent();
     persistSettings();
     refreshDeck();
   });
@@ -99,6 +113,7 @@ function bindDeckEvents() {
     const previous = sourceLang;
     sourceLang = event.target.value || DEFAULT_SOURCE_LANG;
     chooseDifferentTarget(previous);
+    applyRandomAccent();
     persistSettings();
     refreshDeck();
   });
@@ -107,6 +122,7 @@ function bindDeckEvents() {
     const previous = targetLang;
     targetLang = event.target.value || DEFAULT_TARGET_LANG;
     chooseDifferentSource(previous);
+    applyRandomAccent();
     persistSettings();
     refreshDeck();
   });
@@ -117,12 +133,14 @@ function bindDeckEvents() {
     targetLang = oldSource;
     setSelectValue("sourceLang", sourceLang);
     setSelectValue("targetLang", targetLang);
+    applyRandomAccent();
     persistSettings();
     refreshDeck();
   });
 
   $("langSelect").addEventListener("change", event => {
     selectedLang = event.target.value || DEFAULT_LANG;
+    applyRandomAccent();
     persistSettings();
     refreshDeck();
   });
@@ -197,9 +215,12 @@ function init() {
   bindCardEvents();
   bindDialogHandlers();
   initVoices();
+  window.addEventListener("resize", () => {
+    fitCardsToViewport();
+    if ($("fsOverlay").classList.contains("on")) fitFullscreenCard();
+  });
   refreshDeck().catch(error => {
     console.error(error);
-    setStatus("Could not initialize the flashcard deck.");
   });
 }
 

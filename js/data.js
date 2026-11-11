@@ -177,8 +177,7 @@ async function refreshDeck() {
 
   if (deckMode === "dictionary") {
     if (!DICT_META) {
-      $("list").innerHTML = '<div class="empty">Dictionary metadata is missing. Run <code>python3 scripts/build_dictionary_packs.py</code>.</div>';
-      setStatus("Dictionary data unavailable");
+      $("list").innerHTML = '<div class="empty">Dictionary metadata is missing.</div>';
       return;
     }
     if (sourceLang === targetLang) {
@@ -188,8 +187,7 @@ async function refreshDeck() {
     }
     const from = dictionaryLanguage(sourceLang);
     const to = dictionaryLanguage(targetLang);
-    setStatus("Loading local dictionary packs: " + from.name + " → " + to.name + "…");
-    $("list").innerHTML = '<div class="loading">Loading human-edited dictionary entries…</div>';
+    $("list").innerHTML = '<div class="loading">Loading cards</div>';
     try {
       await Promise.all([loadDictionaryPack(sourceLang), loadDictionaryPack(targetLang)]);
       if (token !== deckLoadToken) return;
@@ -197,9 +195,7 @@ async function refreshDeck() {
     } catch (error) {
       if (token !== deckLoadToken) return;
       console.error(error);
-      $("list").innerHTML = '<div class="empty">Could not load the local dictionary packs.<br><small>' +
-        escapeHtml(error.message) + '</small></div>';
-      setStatus("Dictionary pack load failed");
+      $("list").innerHTML = '<div class="empty">Could not load the local dictionary packs.</div>';
       return;
     }
   } else {

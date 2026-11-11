@@ -6,7 +6,7 @@ This is an Operate surface. The visitor's job is to choose two languages and stu
 
 ## Visual thesis
 
-A bilingual dictionary spread. The interface borrows from editorial reference books: unbleached paper, dark ink, one annotation accent, hairline rules, generous margins, and a serif display face for words. It avoids the generic SaaS card kit, sakura theming, gradients, glass layers, and decorative pictographs.
+A bilingual dictionary spread. The interface borrows from editorial reference books: unbleached paper, dark ink, one rotating annotation accent, hairline rules, compact margins, and a serif display face for words. It avoids the generic SaaS card kit, sakura theming, gradients, glass layers, and decorative pictographs.
 
 ## Sources integrated
 
@@ -23,55 +23,60 @@ Tokens follow a primitive to semantic to component model. Component CSS referenc
 - Sunken paper: `#E9E4D6`
 - Ink: `#211D24`
 - Muted ink: `#5C5660`
-- Annotation green: `#2F5D50`
-- Highlighter citron: `#D8E84A`
-- Oxide red: `#A63D2F`
 - Decorative rule: `#D3CCBC`
 - Night paper: `#17151A`
 - Night raised: `#211E25`
 - Night sunken: `#100F13`
-- Night annotation: `#8FD3B6`
-- Night highlighter: `#35481C`
+- Night ink: `#F4F1E8`
+- Night muted ink: `#B9B2A9`
+- Night rule: `#3A3540`
+
+Six accent themes use the same semantic token names. A language change selects a different theme at random from `moss`, `oxide`, `indigo`, `plum`, `teal`, and `umber`. The selected theme is saved with the other preferences. Every theme defines a light accent, light accent hover, light selected tint, dark accent, dark accent hover, and dark selected tint. The original Instagram mark is restored with `currentColor` so it follows the active theme. The settings control uses a sliders icon rather than the old gear.
 
 Type roles:
 
 - UI: system sans, body at 16px, line height 1.5.
-- Display: Iowan Old Style, Palatino, Georgia, or the local serif fallback. Cards use 36px to 60px for the first term and 30px to 48px for the second term.
-- Data: system monospace for ordinals, counters, and codes, with tabular numerals.
+- Display: Iowan Old Style, Palatino, Georgia, or the local serif fallback. First screen cards use viewport relative term sizes to keep two full cards visible. Fullscreen uses larger viewport relative term sizes and scales down when needed.
+- Data: system monospace for ordinals and codes, with tabular numerals.
 
-Spacing uses a 4px rhythm: 4, 8, 12, 16, 20, 24, 32, 40, 48, and 64. Gaps come from the scale, related items sit closer than unrelated items, and the page has one gutter.
+Spacing uses a 4px rhythm: 4, 8, 12, 16, 20, 24, 32, 40, 48, and 64. Gaps come from the scale, related items sit closer than unrelated items, and the page has one gutter. The header is compact so the card list starts high on short screens.
 
 Radii are intentionally small: 2px for cards, 4px for controls, and 999px only for pills. Motion uses 150ms for state changes and 220ms for one orchestrated fade, with `cubic-bezier(0.2, 0, 0, 1)`. Pressed controls scale to 0.96. All movement is disabled under `prefers-reduced-motion: reduce`.
 
+## Compact card contract
+
+- The visible card shows the word, its reading when needed, the paired sense, an ordinal, the pair label, and one category or part of speech tag.
+- Language names are not repeated beside each side. The pair label beside the ordinal is enough, for example `6日本語 → English`.
+- The duplicate part of speech text beside the pair label is removed because the tag already carries it.
+- No status, count, or coverage line is shown in the product UI.
+- The first screen scales the first two cards to the available viewport height. At least two cards are fully visible without scrolling on short screens.
+- Fullscreen reuses the exact first page card markup and scales it to fit the stage height. It never needs an internal scroll.
+- No bottom player exists in fullscreen, autoplay, or any other mode. Autoplay remains a header control; fullscreen keeps only the close control and the card.
+
 ## Measured contrast
 
-Measured with a local WCAG relative luminance script, light theme:
+Measured with a local WCAG relative luminance script across all six accent themes:
 
-- Ink on paper: 14.69:1.
-- Muted ink on paper: 6.29:1.
-- Ink on raised paper: 15.75:1.
-- Annotation green on paper: 6.63:1.
-- Paper on annotation green: 6.63:1.
-- Ink on highlighter citron: 12.29:1.
-- Muted ink on highlighter citron: 5.27:1.
+- Light accent on paper, minimum 5.25:1.
+- Paper on light accent, minimum 5.25:1.
+- Light accent hover on paper, minimum 7.46:1.
+- Paper on light accent hover, minimum 7.46:1.
+- Ink on selected tint, minimum 10.77:1.
+- Muted ink on selected tint, minimum 4.62:1.
+- Dark accent on night paper, minimum 9.07:1.
+- Night paper on dark accent, minimum 9.07:1.
+- Dark accent hover on night paper, minimum 11.60:1.
+- Night paper on dark accent hover, minimum 11.60:1.
+- Night ink on dark selected tint, minimum 8.72:1.
+- Night muted ink on dark selected tint, minimum 4.69:1.
 
-Measured with the same script, dark theme:
-
-- Paper on night paper: 16.05:1.
-- Muted paper on night paper: 8.63:1.
-- Paper on night raised: 14.56:1.
-- Night annotation on night paper: 10.50:1.
-- Night paper on night annotation: 10.50:1.
-- Paper on night highlighter: 8.88:1.
-- Muted paper on night highlighter: 4.77:1.
-
-Text and action pairs exceed WCAG AA 4.5:1. Essential control borders use the ink token, which exceeds 3:1. The decorative rule token is below 3:1 and is never the only boundary of a control.
+All text and action pairs exceed WCAG AA 4.5:1. Essential control borders use the ink token, which exceeds 3:1. The decorative rule token is below 3:1 and is never the only boundary of a control.
 
 ## Interaction and accessibility
 
 - Every control has default, hover, focus visible, active, and disabled states.
 - Focus is a 3px ink outline with a 2px offset, visible on both themes.
-- Primary controls use the annotation token. Secondary controls are neutral with a border. Selected state uses the highlighter token with ink text.
+- Primary controls use the active accent token. Secondary controls are neutral with a border. Selected state uses the active tint token with ink text.
 - Touch targets are at least 44px.
 - Color is never the only state cue: labels, icons, text, and selected backgrounds carry meaning too.
 - Sticky chrome does not cover focused cards: cards reserve scroll margin.
