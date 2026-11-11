@@ -10,7 +10,7 @@ let allCards = [];                        // every card available for the active
 let pool = [];                            // filtered card list
 let visibleLimit = VISIBLE_CARD_STEP;
 let shuffled = false;
-let showSenseContext = true;
+let showSenseContext = false;
 let selectedCardIndex = 0;
 
 let currentSpeakingBtn = null;

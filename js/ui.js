@@ -1,10 +1,5 @@
 /* Rendering, fullscreen, autoplay, and deck-mode UI */
 
-function setStatus(message) {
-  const status = $("status");
-  if (status) status.textContent = message;
-}
-
 function toggleHidden(id, hidden) {
   const element = $(id);
   if (element) element.classList.toggle("hidden", hidden);
@@ -26,6 +21,8 @@ function updatePlaybackChrome() {
     const fullscreen = $("fsOverlay").classList.contains("on");
     bar.classList.toggle("hidden", autoplayActive || fullscreen);
   }
+  fitCardsToViewport();
+  if ($("fsOverlay").classList.contains("on")) fitFullscreenCard();
 }
 
 function setModeVisibility() {
@@ -53,22 +50,6 @@ function setModeVisibility() {
   updatePlaybackChrome();
 }
 
-function updateStatus() {
-  const total = pool.length;
-  const shown = Math.min(visibleLimit, total);
-  const front = currentSideConfig("front");
-  const back = currentSideConfig("back");
-  if (!total) {
-    setStatus("No cards match these filters, " + front.label + " → " + back.label);
-    return;
-  }
-  setStatus(
-    formatCount(total) + " card" + (total === 1 ? "" : "s") +
-    ", " + front.label + " → " + back.label +
-    ", showing " + formatCount(shown)
-  );
-}
-
 function speakerButton(index, side, cssClass, label) {
   return '<button type="button" class="' + cssClass + ' speak-btn" ' +
     'data-index="' + index + '" data-side="' + side + '" ' +
@@ -82,23 +63,52 @@ function sideBlock(card, index, side) {
   const buttonClass = isFront ? "jp-btn" : "en-btn";
   const textClass = isFront ? "jp-t" : "en-t";
   const label = data.label || data.name || "";
-  const terms = data.alternates.slice(0, 3).map(escapeHtml).join(", ");
   const dir = data.dir || "ltr";
   const lang = data.locale || data.code || "";
   const rtlClass = data.rtl ? " rtl-text" : "";
   return '<section class="side-block ' + side + '-block">' +
-      '<div class="side-head">' +
-        '<span class="side-label">' + escapeHtml(label) +
-          (data.gender ? '<span class="gender-tag">' + escapeHtml(data.gender) + '</span>' : '') +
-        '</span>' +
+      '<div class="side-line">' +
         speakerButton(index, side, buttonClass, "Play " + label) +
+        '<div class="side-copy">' +
+          '<div class="' + textClass + ' term-text' + rtlClass + '" lang="' + escapeHtml(lang) + '" dir="' + dir + '">' +
+            escapeHtml(data.word) +
+          '</div>' +
+          (data.reading ? '<div class="reading" dir="ltr">' + escapeHtml(data.reading) + '</div>' : '') +
+        '</div>' +
       '</div>' +
-      '<div class="' + textClass + ' term-text' + rtlClass + '" lang="' + escapeHtml(lang) + '" dir="' + dir + '">' +
-        escapeHtml(data.word) +
-      '</div>' +
-      (data.reading ? '<div class="reading" dir="ltr">' + escapeHtml(data.reading) + '</div>' : '') +
-      (terms ? '<div class="alt-terms">' + terms + '</div>' : '') +
     '</section>';
+}
+
+function fitCardsToViewport() {
+  const list = $("list");
+  if (!list) return;
+  list.style.removeProperty("--card-scale");
+  const cards = list.querySelectorAll(".card");
+  if (cards.length < 2) {
+    list.style.setProperty("--card-scale", "1");
+    return;
+  }
+  const first = cards[0].getBoundingClientRect();
+  const second = cards[1].getBoundingClientRect();
+  const natural = second.bottom - first.top;
+  const available = Math.max(0, window.innerHeight - list.getBoundingClientRect().top);
+  const scale = natural > 0 && available > 0 ? Math.min(1, available / natural) : 1;
+  list.style.setProperty("--card-scale", scale.toFixed(3));
+}
+
+function fitFullscreenCard() {
+  const stage = $("fsCard");
+  if (!stage) return;
+  stage.style.removeProperty("--fs-scale");
+  const card = stage.querySelector(".card");
+  if (!card) {
+    stage.style.setProperty("--fs-scale", "1");
+    return;
+  }
+  const available = stage.clientHeight;
+  const natural = card.scrollHeight;
+  const scale = natural > 0 && available > 0 ? Math.min(1, available / natural) : 1;
+  stage.style.setProperty("--fs-scale", scale.toFixed(3));
 }
 
 function renderCardContent(card, index, fullscreen) {
@@ -109,17 +119,18 @@ function renderCardContent(card, index, fullscreen) {
     : "";
   const rootClass = "card" + (index === selectedCardIndex ? " active" : "");
   const rootId = fullscreen ? "fs-card-item" : "card-" + index;
-  const ordinal = String(index + 1).padStart(2, "0");
+  const ordinal = String(index + 1);
   return '<article class="' + rootClass + '" id="' + rootId + '" ' +
       'data-card-index="' + index + '" data-index="' + index + '">' +
       '<div class="card-meta">' +
         '<span class="card-index">' + ordinal + '</span>' +
         '<span class="card-pair">' + escapeHtml(card.pairLabel || "") + '</span>' +
-        '<span class="card-pos">' + escapeHtml(card.pos || card.mode || "") + '</span>' +
       '</div>' +
-      sideBlock(card, index, "front") +
-      '<div class="card-divider" aria-hidden="true"></div>' +
-      sideBlock(card, index, "back") +
+      '<div class="card-sides">' +
+        sideBlock(card, index, "front") +
+        '<div class="card-divider" aria-hidden="true"></div>' +
+        sideBlock(card, index, "back") +
+      '</div>' +
       context +
       '<footer class="card-footer">' +
         '<span class="lv-tag ' + escapeHtml(card.badgeClass || "") + '">' + escapeHtml(card.badge || "") + '</span>' +
@@ -130,12 +141,12 @@ function renderCardContent(card, index, fullscreen) {
 function render() {
   const list = $("list");
   if (!list) return;
-  updateStatus();
   if (!pool.length) {
     const reason = deckMode === "dictionary"
       ? "No cards match this pair and filter. Try another pair or clear the search."
       : "No matches found. Try another level, category, or search.";
     list.innerHTML = '<div class="empty">' + escapeHtml(reason) + '</div>';
+    fitCardsToViewport();
     return;
   }
   const shown = Math.min(visibleLimit, pool.length);
@@ -148,6 +159,7 @@ function render() {
       'Show more cards (' + formatCount(pool.length - shown) + ' remaining)</button>';
   }
   list.innerHTML = html;
+  fitCardsToViewport();
 }
 
 function showMoreCards() {
@@ -186,6 +198,7 @@ function toggleFullscreen() {
   document.removeEventListener("keydown", fsKeyHandler);
   document.addEventListener("keydown", fsKeyHandler);
   renderFSCard();
+  fitFullscreenCard();
 }
 
 function closeFullscreen() {
@@ -205,10 +218,9 @@ function fsKeyHandler(event) {
 
 function renderFSCard(direction) {
   const container = $("fsCard");
-  const counter = $("fsCounter");
   if (!pool.length) {
     if (container) container.innerHTML = '<div class="empty">No cards available.</div>';
-    if (counter) counter.textContent = "0 / 0";
+    fitFullscreenCard();
     return;
   }
   const index = Math.max(0, Math.min(
@@ -217,7 +229,6 @@ function renderFSCard(direction) {
   ));
   const content = renderCardContent(pool[index], index, true);
   const token = ++fsRenderToken;
-  if (counter) counter.textContent = (index + 1) + " / " + formatCount(pool.length);
 
   if (direction) {
     const outClass = direction === "next" ? "fs-slide-out-left" : "fs-slide-out-right";
@@ -228,6 +239,7 @@ function renderFSCard(direction) {
       if (token !== fsRenderToken) return;
       container.innerHTML = content;
       if (currentSpeakingBtn) setSpeakingState(index, currentSpeakingBtn, true);
+      fitFullscreenCard();
       container.classList.remove(outClass);
       container.classList.add(inClass);
       setTimeout(() => {
@@ -237,6 +249,7 @@ function renderFSCard(direction) {
   } else {
     container.innerHTML = content;
     if (currentSpeakingBtn) setSpeakingState(index, currentSpeakingBtn, true);
+    fitFullscreenCard();
     container.classList.remove("fs-slide-out-left", "fs-slide-out-right", "fs-slide-in-left", "fs-slide-in-right", "fs-fade-in");
     void container.offsetWidth;
     container.classList.add("fs-fade-in");
@@ -280,7 +293,6 @@ function startAutoplay() {
   autoplayActive = true;
   autoplayIndex = Math.min(selectedCardIndex, pool.length - 1);
   $("autoplayBtn").classList.add("on");
-  $("autoplayBar").classList.add("on");
   updatePlaybackChrome();
   playCurrentCard();
 }
@@ -290,9 +302,7 @@ function stopAutoplay() {
   currentSpeakingBtn = null;
   if (canSpeak()) speechSynthesis.cancel();
   const button = $("autoplayBtn");
-  const bar = $("autoplayBar");
   if (button) button.classList.remove("on");
-  if (bar) bar.classList.remove("on");
   document.querySelectorAll(".speaking").forEach(node => node.classList.remove("speaking"));
   updatePlaybackChrome();
 }
@@ -306,8 +316,6 @@ function playCurrentCard() {
   const cardNode = document.querySelector('.card[data-card-index="' + autoplayIndex + '"]');
   if (cardNode) cardNode.scrollIntoView({ behavior: "smooth", block: "center" });
 
-  $("autoplayStatus").textContent = (autoplayIndex + 1) + " / " + formatCount(pool.length);
-  $("progressFill").style.width = ((autoplayIndex + 1) / pool.length * 100) + "%";
   if ($("fsOverlay").classList.contains("on")) renderFSCard("next");
 
   playCardPair(autoplayIndex, () => {
@@ -317,18 +325,4 @@ function playCurrentCard() {
       if (autoplayActive) playCurrentCard();
     }, 800);
   }, () => autoplayActive);
-}
-
-function nextCard() {
-  if (autoplayIndex < pool.length - 1) {
-    autoplayIndex++;
-    playCurrentCard();
-  }
-}
-
-function prevCard() {
-  if (autoplayIndex > 0) {
-    autoplayIndex--;
-    playCurrentCard();
-  }
 }

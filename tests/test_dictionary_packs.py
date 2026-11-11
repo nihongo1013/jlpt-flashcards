@@ -139,7 +139,14 @@ class DictionaryPackTests(unittest.TestCase):
         self.assertIn("prefers-color-scheme: dark", css)
         self.assertIn("card-meta", ui)
         self.assertIn("card-index", ui)
-        self.assertIn("side-head", ui)
+        self.assertIn("card-pair", ui)
+        self.assertIn("term-text", ui)
+        self.assertIn("fitCardsToViewport", ui)
+        self.assertIn("fitFullscreenCard", ui)
+        self.assertNotIn("side-head", ui)
+        self.assertNotIn("side-label", ui)
+        self.assertNotIn("card-pos", ui)
+        self.assertNotIn("setStatus", ui)
         self.assertNotIn("startSakura", app)
         self.assertNotIn("createSakuraPetal", ui)
 
@@ -157,27 +164,62 @@ class DictionaryPackTests(unittest.TestCase):
             high, low = max(first, second), min(first, second)
             return (high + 0.05) / (low + 0.05)
 
-        pairs = [
-            ("#211D24", "#F4F1E8"),
-            ("#5C5660", "#F4F1E8"),
-            ("#211D24", "#FBF9F2"),
-            ("#2F5D50", "#F4F1E8"),
-            ("#F4F1E8", "#2F5D50"),
-            ("#211D24", "#D8E84A"),
-            ("#5C5660", "#D8E84A"),
-            ("#F4F1E8", "#17151A"),
-            ("#B9B2A9", "#17151A"),
-            ("#F4F1E8", "#211E25"),
-            ("#8FD3B6", "#17151A"),
-            ("#17151A", "#8FD3B6"),
-            ("#F4F1E8", "#35481C"),
-            ("#B9B2A9", "#35481C"),
-        ]
-        for foreground, background in pairs:
-            self.assertGreaterEqual(
-                ratio(foreground, background), 4.5,
-                f"contrast failure for {foreground} on {background}",
-            )
+        css = (ROOT / "css" / "redesign.css").read_text(encoding="utf-8")
+        app = (ROOT / "js" / "app.js").read_text(encoding="utf-8")
+        tokens = dict(re.findall(r"--([a-z0-9-]+):\s*(#[0-9A-Fa-f]{6});", css))
+        accents = {
+            "moss": ("moss", "moss-deep", "citron", "night-moss", "night-moss-light", "night-citron"),
+            "oxide": ("oxide", "oxide-deep", "oxide-tint", "oxide-night", "oxide-night-light", "oxide-night-tint"),
+            "indigo": ("indigo", "indigo-deep", "indigo-tint", "indigo-night", "indigo-night-light", "indigo-night-tint"),
+            "plum": ("plum", "plum-deep", "plum-tint", "plum-night", "plum-night-light", "plum-night-tint"),
+            "teal": ("teal", "teal-deep", "teal-tint", "teal-night", "teal-night-light", "teal-night-tint"),
+            "umber": ("umber", "umber-deep", "umber-tint", "umber-night", "umber-night-light", "umber-night-tint"),
+        }
+        for name, keys in accents.items():
+            self.assertIn(f':root[data-accent="{name}"]', css)
+            self.assertIn(f'"{name}"', app)
+            values = [tokens["primitive-" + key] for key in keys]
+            for value in values:
+                self.assertRegex(value, r"^#[0-9A-Fa-f]{6}$")
+            light, light_hover, tint, dark, dark_hover, dark_tint = values
+            pairs = [
+                (light, tokens["primitive-paper"]),
+                (tokens["primitive-paper"], light),
+                (light_hover, tokens["primitive-paper"]),
+                (tokens["primitive-paper"], light_hover),
+                (tokens["primitive-ink"], tint),
+                (tokens["primitive-muted"], tint),
+                (dark, tokens["primitive-night"]),
+                (tokens["primitive-night"], dark),
+                (dark_hover, tokens["primitive-night"]),
+                (tokens["primitive-night"], dark_hover),
+                (tokens["primitive-night-ink"], dark_tint),
+                (tokens["primitive-night-muted"], dark_tint),
+            ]
+            for foreground, background in pairs:
+                self.assertGreaterEqual(
+                    ratio(foreground, background), 4.5,
+                    f"{name} contrast failure for {foreground} on {background}",
+                )
+
+    def test_compact_cards_have_no_status_line_or_bottom_player(self):
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        ui = (ROOT / "js" / "ui.js").read_text(encoding="utf-8")
+        css = (ROOT / "css" / "redesign.css").read_text(encoding="utf-8")
+        self.assertNotIn('id="status"', html)
+        self.assertNotIn("autoplay-bar", html)
+        self.assertNotIn("fs-nav", html)
+        self.assertNotIn("autoplayBar", ui)
+        self.assertNotIn("autoplayStatus", ui)
+        self.assertNotIn("progressFill", ui)
+        self.assertNotIn("fsCounter", ui)
+        self.assertIn("--card-scale", css)
+        self.assertIn("--fs-scale", css)
+        self.assertIn("settings-icon", html)
+        self.assertIn('id="instaBtn"', html)
+        self.assertIn("https://www.instagram.com/nihongo_1013", html)
+        self.assertNotIn('id="showContext" checked', html)
+        self.assertIn("let showSenseContext = false;", (ROOT / "js" / "state.js").read_text(encoding="utf-8"))
 
     def test_csv_keeps_only_complete_meaning_columns(self):
         with (ROOT / "Vocabulary.csv").open(encoding="utf-8-sig", newline="") as handle:

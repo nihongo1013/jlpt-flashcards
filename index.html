@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-accent="moss">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,8 +27,15 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" fill="currentColor"/></svg>
       </button>
       <button type="button" class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings" onclick="toggleSettingsDialog()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19.14 12.94C19.18 12.64 19.2 12.33 19.2 12C19.2 11.68 19.18 11.36 19.13 11.06L21.16 9.48C21.34 9.34 21.39 9.07 21.28 8.87L19.36 5.55C19.24 5.33 18.99 5.26 18.77 5.33L16.38 6.29C15.88 5.91 15.35 5.59 14.76 5.35L14.4 2.81C14.36 2.57 14.16 2.4 13.92 2.4H10.08C9.84 2.4 9.65 2.57 9.61 2.81L9.25 5.35C8.66 5.59 8.12 5.92 7.63 6.29L5.24 5.33C5.02 5.25 4.77 5.33 4.65 5.55L2.74 8.87C2.62 9.08 2.66 9.34 2.86 9.48L4.89 11.06C4.84 11.36 4.8 11.69 4.8 12C4.8 12.31 4.82 12.64 4.87 12.94L2.85 14.52C2.67 14.66 2.62 14.93 2.73 15.13L4.65 18.45C4.77 18.67 5.02 18.74 5.24 18.67L7.63 17.71C8.13 18.09 8.66 18.41 9.25 18.65L9.61 21.19C9.65 21.43 9.84 21.6 10.08 21.6H13.92C14.16 21.6 14.36 21.43 14.39 21.19L14.75 18.65C15.34 18.41 15.88 18.09 16.37 17.71L18.76 18.67C18.98 18.75 19.23 18.67 19.35 18.45L21.27 15.13C21.39 14.91 21.34 14.66 21.15 14.52L19.14 12.94ZM12 15.6C10.02 15.6 8.4 13.98 8.4 12C8.4 10.02 10.02 8.4 12 15.6 13.98 15.6 15.6 13.98 15.6 12C15.6 10.02 13.98 8.4 12 8.4C10.02 8.4 8.4 10.02 8.4 12Z" fill="currentColor"/></svg>
+        <svg class="settings-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h9M17 7h3M4 17h3M11 17h9"/>
+          <circle cx="15" cy="7" r="2"/>
+          <circle cx="9" cy="17" r="2"/>
+        </svg>
       </button>
+          <a href="https://www.instagram.com/nihongo_1013" target="_blank" rel="noopener noreferrer" class="icon-btn" id="instaBtn" title="Follow @nihongo_1013" aria-label="Instagram">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" fill="currentColor"/></svg>
+      </a>
     </div>
   </div>
 
@@ -59,8 +66,6 @@
       </select>
     </div>
   </div>
-
-  <div id="status" aria-live="polite"></div>
 </header>
 
 <div class="settings-dialog" id="settingsDialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1">
@@ -101,7 +106,7 @@
       <p class="voice-notice hidden" id="voiceNotice"></p>
       <div class="settings-section checkbox-section">
         <label class="checkbox-row">
-          <input type="checkbox" id="showContext" checked>
+          <input type="checkbox" id="showContext">
           <span>Show context</span>
         </label>
       </div>
@@ -126,31 +131,6 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
   </button>
   <div class="fs-stage" id="fsCard"></div>
-  <div class="fs-nav">
-    <button type="button" class="fs-nav-btn" onclick="fsPrev()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" fill="currentColor"/></svg>
-      <span>Prev</span>
-    </button>
-    <span class="fs-counter" id="fsCounter" aria-live="polite">1 / 1</span>
-    <button type="button" class="fs-nav-btn" onclick="fsNext()">
-      <span>Next</span>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z" fill="currentColor"/></svg>
-    </button>
-  </div>
-</div>
-
-<div class="autoplay-bar" id="autoplayBar">
-  <button type="button" onclick="stopAutoplay()" title="Stop" aria-label="Stop" class="ap-btn">
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" fill="currentColor"/></svg>
-  </button>
-  <button type="button" onclick="prevCard()" title="Previous" aria-label="Previous" class="ap-btn">
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" fill="currentColor"/></svg>
-  </button>
-  <button type="button" onclick="nextCard()" title="Next" aria-label="Next" class="ap-btn">
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z" fill="currentColor"/></svg>
-  </button>
-  <span id="autoplayStatus"></span>
-  <div class="progress" role="progressbar" aria-label="Autoplay progress"><div class="progress-fill" id="progressFill"></div></div>
 </div>
 
 <script src="data/vocabulary.js"></script>
