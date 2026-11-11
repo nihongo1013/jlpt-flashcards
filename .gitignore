@@ -22,8 +22,9 @@ __pycache__/
 .env
 venv/
 .venv/
-scripts/.telugu_cache.json
-scripts/.telugu_cache.json.tmp
+# Dictionary builder caches
+.cache/
+.hf-cache/
 
 # Node (if ever added)
 node_modules/
