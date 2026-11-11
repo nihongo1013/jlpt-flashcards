@@ -3,19 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JLPT Flashcards</title>
-  <meta name="description" content="Learn Japanese vocabulary with JLPT N5-N1 flashcards. Supports English, Hindi, and Telugu translations with text-to-speech.">
+  <title>Lingua Pairs · Dictionary Language Flashcards</title>
+  <meta name="description" content="Lingua Pairs: offline flashcards for any two of 109 languages, built from human-edited Wiktionary dictionary senses, plus the original Japanese JLPT deck. No translation API.">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 <header>
   <div class="header-top">
     <div class="brand">
-      <div class="brand-name">JLPT Flashcards</div>
+      <div class="brand-name">Lingua Pairs</div>
+      <div class="brand-tagline">109 languages · authentic dictionary senses · no translation API</div>
     </div>
   </div>
+
   <div class="search-bar">
-    <input type="text" id="q" placeholder="Search vocabulary...">
+    <input type="text" id="q" placeholder="Search words, readings, senses, categories..." autocomplete="off">
     <div class="header-btns">
       <button class="icon-btn" id="autoplayBtn" title="Auto-play" onclick="toggleAutoplay()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7z" fill="#6B5B50"/></svg>
@@ -24,14 +26,47 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" fill="#6B5B50"/></svg>
       </button>
       <button class="icon-btn" id="settingsBtn" title="Settings" onclick="toggleSettingsDialog()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M19.14 12.94C19.18 12.64 19.2 12.33 19.2 12C19.2 11.68 19.18 11.36 19.13 11.06L21.16 9.48C21.34 9.34 21.39 9.07 21.28 8.87L19.36 5.55C19.24 5.33 18.99 5.26 18.77 5.33L16.38 6.29C15.88 5.91 15.35 5.59 14.76 5.35L14.4 2.81C14.36 2.57 14.16 2.4 13.92 2.4H10.08C9.84 2.4 9.65 2.57 9.61 2.81L9.25 5.35C8.66 5.59 8.12 5.92 7.63 6.29L5.24 5.33C5.02 5.25 4.77 5.33 4.65 5.55L2.74 8.87C2.62 9.08 2.66 9.34 2.86 9.48L4.89 11.06C4.84 11.36 4.8 11.69 4.8 12C4.8 12.31 4.82 12.64 4.87 12.94L2.85 14.52C2.67 14.66 2.62 14.93 2.73 15.13L4.65 18.45C4.77 18.67 5.02 18.74 5.24 18.67L7.63 17.71C8.13 18.09 8.66 18.41 9.25 18.65L9.61 21.19C9.65 21.43 9.84 21.6 10.08 21.6H13.92C14.16 21.6 14.36 21.43 14.39 21.19L14.75 18.65C15.34 18.41 15.88 18.09 16.37 17.71L18.76 18.67C18.98 18.75 19.23 18.67 19.35 18.45L21.27 15.13C21.39 14.91 21.34 14.66 21.15 14.52L19.14 12.94ZM12 15.6C10.02 15.6 8.4 13.98 8.4 12C8.4 10.02 10.02 8.4 12 8.4C13.98 8.4 15.6 10.02 15.6 12C15.6 13.98 13.98 15.6 12 15.6Z" fill="#6B5B50"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M19.14 12.94C19.18 12.64 19.2 12.33 19.2 12C19.2 11.68 19.18 11.36 19.13 11.06L21.16 9.48C21.34 9.34 21.39 9.07 21.28 8.87L19.36 5.55C19.24 5.33 18.99 5.26 18.77 5.33L16.38 6.29C15.88 5.91 15.35 5.59 14.76 5.35L14.4 2.81C14.36 2.57 14.16 2.4 13.92 2.4H10.08C9.84 2.4 9.65 2.57 9.61 2.81L9.25 5.35C8.66 5.59 8.12 5.92 7.63 6.29L5.24 5.33C5.02 5.25 4.77 5.33 4.65 5.55L2.74 8.87C2.62 9.08 2.66 9.34 2.86 9.48L4.89 11.06C4.84 11.36 4.8 11.69 4.8 12C4.8 12.31 4.82 12.64 4.87 12.94L2.85 14.52C2.67 14.66 2.62 14.93 2.73 15.13L4.65 18.45C4.77 18.67 5.02 18.74 5.24 18.67L7.63 17.71C8.13 18.09 8.66 18.41 9.25 18.65L9.61 21.19C9.65 21.43 9.84 21.6 10.08 21.6H13.92C14.16 21.6 14.36 21.43 14.39 21.19L14.75 18.65C15.34 18.41 15.88 18.09 16.37 17.71L18.76 18.67C18.98 18.75 19.23 18.67 19.35 18.45L21.27 15.13C21.39 14.91 21.34 14.66 21.15 14.52L19.14 12.94ZM12 15.6C10.02 15.6 8.4 13.98 8.4 12C8.4 10.02 10.02 8.4 12 15.6 13.98 15.6 15.6 13.98 15.6 12C15.6 10.02 13.98 8.4 12 8.4C10.02 8.4 8.4 10.02 8.4 12Z" fill="#6B5B50"/></svg>
       </button>
       <a href="https://www.instagram.com/nihongo_1013" target="_blank" rel="noopener noreferrer" class="icon-btn" id="instaBtn" title="Follow @nihongo_1013">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" fill="#fff"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 0 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" fill="#fff"/></svg>
       </a>
     </div>
   </div>
+
+  <div class="pair-bar">
+    <div class="control-field deck-mode-field">
+      <label for="deckMode">Deck</label>
+      <select id="deckMode">
+        <option value="dictionary" selected>Dictionary pairs</option>
+        <option value="jlpt">JLPT Japanese (legacy CSV)</option>
+      </select>
+    </div>
+
+    <div class="pair-fields" id="pairFields">
+      <div class="control-field">
+        <label for="sourceLang">Front / prompt</label>
+        <select id="sourceLang"><option value="ja">Loading languages…</option></select>
+      </div>
+      <button type="button" class="swap-btn" id="swapLangs" title="Swap the two languages" aria-label="Swap languages">⇄</button>
+      <div class="control-field">
+        <label for="targetLang">Back / answer</label>
+        <select id="targetLang"><option value="en">Loading languages…</option></select>
+      </div>
+    </div>
+
+    <div class="control-field hidden" id="jlptLangField">
+      <label for="langSelect">Meaning language</label>
+      <select id="langSelect">
+        <option value="en" selected>🇬🇧 English</option>
+        <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+        <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+      </select>
+    </div>
+  </div>
+
   <div id="status"></div>
+  <div id="dataNote"></div>
 </header>
 
 <!-- Settings Dialog -->
@@ -42,8 +77,8 @@
       <button class="settings-close" onclick="toggleSettingsDialog()">&times;</button>
     </div>
     <div class="settings-body">
-      <div class="settings-section">
-        <label>Level Filter</label>
+      <div class="settings-section hidden" id="levelSection">
+        <label for="lv">JLPT level filter</label>
         <select id="lv">
           <option value="n5">N5 (Beginner)</option>
           <option value="n4">N4 (Elementary)</option>
@@ -57,24 +92,23 @@
         </select>
       </div>
       <div class="settings-section">
-        <label>Category Filter</label>
+        <label for="cat" id="catLabel">Dictionary category</label>
         <select id="cat"><option value="">All categories</option></select>
       </div>
       <div class="settings-section">
-        <label>🌐 Translation Language</label>
-        <select id="langSelect">
-          <option value="en" selected>🇬🇧 English</option>
-          <option value="hi">🇮🇳 हिंदी (Hindi)</option>
-          <option value="te">🇮🇳 తెలుగు (Telugu)</option>
-        </select>
+        <label for="frontVoice" id="frontVoiceLabel">🗣️ Front voice</label>
+        <select id="frontVoice" title="Front voice"><option value="">Voice (auto)</option></select>
       </div>
       <div class="settings-section">
-        <label>🗣️ Japanese Voice</label>
-        <select id="jpVoice" title="Japanese voice"><option value="">JP Voice (auto)</option></select>
+        <label for="backVoice" id="backVoiceLabel">🗣️ Back voice</label>
+        <select id="backVoice" title="Back voice"><option value="">Voice (auto)</option></select>
       </div>
-      <div class="settings-section">
-        <label id="meaningVoiceLabel">🗣️ English Voice</label>
-        <select id="meaningVoice" title="Meaning voice"><option value="">English Voice (auto)</option></select>
+      <p class="voice-notice hidden" id="voiceNotice"></p>
+      <div class="settings-section checkbox-section">
+        <label class="checkbox-row">
+          <input type="checkbox" id="showContext" checked>
+          <span>Show Wiktionary sense / JLPT context</span>
+        </label>
       </div>
       <div class="settings-section">
         <button id="shuf" class="settings-toggle" title="Shuffle cards">
@@ -82,11 +116,20 @@
           <span class="toggle-status">OFF</span>
         </button>
       </div>
+      <div class="settings-section settings-note hidden" id="jlptDeckNote">
+        This deck uses the original <a href="Vocabulary.csv" target="_blank" rel="noopener noreferrer">Vocabulary.csv</a>.
+        Existing CSV values are displayed as-is; no runtime translation is performed.
+      </div>
+      <div class="settings-section settings-note">
+        Dictionary cards come from local, human-edited Wiktionary senses. Generated gap-fills are excluded.
+        <a href="data/dictionary/ATTRIBUTION.md" target="_blank" rel="noopener noreferrer">Sources &amp; CC BY-SA 4.0 licence ↗</a>
+      </div>
     </div>
   </div>
 </div>
 
 <main id="list"></main>
+<noscript><div class="empty">This flashcard app needs JavaScript enabled.</div></noscript>
 
 <!-- Fullscreen Overlay -->
 <div class="fullscreen-overlay" id="fsOverlay">
@@ -114,10 +157,12 @@
   <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
 </div>
 
-<!-- Scripts: data, then modules, then bootstrap -->
+<!-- Scripts: static data, then dictionary packs, then app modules -->
 <script src="data/vocabulary.js"></script>
+<script src="data/dictionary/meta.js"></script>
 <script src="js/config.js"></script>
 <script src="js/state.js"></script>
+<script src="js/dictionary.js"></script>
 <script src="js/data.js"></script>
 <script src="js/speech.js"></script>
 <script src="js/ui.js"></script>
