@@ -32,14 +32,19 @@ Japanese-only JLPT deck and now has two decks:
 - No status, count, or coverage line. A bottom player on the first page provides
   play or pause, previous, next, position, and progress. Fullscreen keeps
   previous and next controls and hides the first-page player.
-- Fullscreen reuses the first page card and always fits the viewport. The first
-  screen keeps at least two full cards visible. A different accent theme is
-  chosen at random after a language change; the choice is saved with the other
-  preferences.
+- Fullscreen reuses the first page card and always fits the viewport. At the
+  100% base size, a wide window or landscape screen shows three full cards:
+  previous, current, and next. A different accent theme is chosen at random
+  after a language change; the choice is saved with the other preferences.
 - Card text auto fits to the available side area, and words are vertically
-  centered with their sound buttons. A Card text size slider sets the maximum
-  font size. A Playback speed slider controls speech rate and the gap between
-  autoplay cards.
+  centered with their sound buttons, with clear spacing after the sound icon.
+  One Card size slider scales card height and fitted font together from 70% to
+  150%. A Playback speed slider controls speech rate and the gap between
+  autoplay cards. Spoken text is cleaned of dots and other punctuation.
+- Small portrait screens use separate stacked card logic: one language is below
+  the other, and each word or meaning stays with its reading on one line. Very
+  short screens get a taller minimum card. Wide and landscape screens keep the
+  side by side pair.
 - A sliders settings icon and the original Instagram link mark are restored to
   the header.
 - Web Speech voices for both selected languages. The default voice follows the
@@ -48,12 +53,12 @@ Japanese-only JLPT deck and now has two decks:
   browser default when no matching voice is installed.
 - Search, category filter, JLPT level filter, shuffle, fullscreen, autoplay,
   chunked card rendering, and saved language pair, accent, playback speed, and
-  text size preferences.
+  card size preferences.
 - **No runtime network requests for card data. No translation API.**
 
 ## Design system
 
-The interface follows [`DESIGN.md`](DESIGN.md): an editorial, task first dictionary spread built from semantic tokens, six WCAG AA accent themes, auto fitted card text, a first-page player, fullscreen previous and next controls, 44px touch targets, visible focus, reduced motion support, and no decorative emoji or gradients. The guidance is adapted from [UI Skills](https://www.ui-skills.com/), the [AgenticSkills design category](https://agenticskills.io/category/design), and [plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills).
+The interface follows [`DESIGN.md`](DESIGN.md): an editorial, task first dictionary spread built from semantic tokens, six WCAG AA accent themes, proportionally fitted card text, a first-page player, fullscreen previous and next controls, separate small portrait card logic, 44px touch targets, visible focus, reduced motion support, and no decorative emoji or gradients. The guidance is adapted from [UI Skills](https://www.ui-skills.com/), the [AgenticSkills design category](https://agenticskills.io/category/design), and [plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills).
 
 ## Workflow
 

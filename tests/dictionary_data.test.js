@@ -136,7 +136,7 @@ test("HTML exposes the two language fields, new name, and new modules", () => {
   for (const id of [
     "deckMode", "sourceLang", "targetLang", "swapLangs", "langSelect",
     "frontVoice", "backVoice", "showContext", "pairFields",
-    "speedSlider", "textSizeSlider", "autoplayBar", "fsCounter",
+    "speedSlider", "cardSizeSlider", "autoplayBar", "fsCounter",
   ]) {
     assert.ok(html.includes(`id="${id}"`), `missing #${id}`);
   }
@@ -218,7 +218,7 @@ test("design skills are integrated into the frontend layer", () => {
   assert.ok(design.includes("agenticskills.io/category/design"));
   assert.ok(design.includes("plugin87/ux-ui-agent-skills"));
   assert.ok(design.includes("Playback speed"));
-  assert.ok(design.includes("Card text size"));
+  assert.ok(design.includes("Card size"));
   assert.ok(ui.includes("card-meta"));
   assert.ok(ui.includes("card-index"));
   assert.ok(ui.includes("card-pair"));
@@ -228,7 +228,7 @@ test("design skills are integrated into the frontend layer", () => {
   assert.ok(ui.includes("fitCardText"));
   assert.ok(ui.includes("updatePlayer"));
   assert.ok(speech.includes("speechRate"));
-  assert.ok(app.includes("cardTextMax"));
+  assert.ok(app.includes("cardSizeScale"));
   assert.ok(!ui.includes("side-head"));
   assert.ok(!ui.includes("side-label"));
   assert.ok(!ui.includes("card-pos"));
@@ -251,7 +251,7 @@ test("cards fit the viewport, restore controls, and rotate accents", () => {
   assert.ok(html.includes('id="progressFill"'));
   assert.ok(html.includes('id="fsCounter"'));
   assert.ok(html.includes('id="speedSlider"'));
-  assert.ok(html.includes('id="textSizeSlider"'));
+  assert.ok(html.includes('id="cardSizeSlider"'));
   assert.ok(html.includes("settings-icon"));
   assert.ok(html.includes('id="instaBtn"'));
   assert.ok(html.includes("https://www.instagram.com/nihongo_1013"));
@@ -275,7 +275,7 @@ test("cards fit the viewport, restore controls, and rotate accents", () => {
   assert.ok(app.includes("applyRandomAccent"));
   assert.ok(app.includes("accent: currentAccent"));
   assert.ok(app.includes("speechRate: speechRate"));
-  assert.ok(app.includes("cardTextMax: cardTextMax"));
+  assert.ok(app.includes("cardSizeScale: cardSizeScale"));
   assert.ok(ui.includes("fitCardText"));
   assert.ok(ui.includes("nextCard"));
   assert.ok(ui.includes("prevCard"));
@@ -284,28 +284,75 @@ test("cards fit the viewport, restore controls, and rotate accents", () => {
   assert.match(ui, /window\.innerHeight - top - playerHeight - gap/);
   assert.match(ui, /stage\.style\.setProperty\("--fs-stage-height"/);
   assert.match(state, /let speechRate = 1;/);
-  assert.match(state, /let cardTextMax = 96;/);
+  assert.match(state, /let cardSizeScale = 1;/);
   assert.match(speech, /utterance\.rate = \(typeof speechRate/);
   assert.match(speech, /function playbackGap/);
   assert.match(state, /let showSenseContext = false;/);
   assert.ok(!html.includes('id="showContext" checked'));
 });
 
-test("settings expose playback speed and card text size sliders", () => {
+test("settings expose playback speed and proportional card size", () => {
   const html = read("index.html");
   const app = read("js/app.js");
   const speech = read("js/speech.js");
   const ui = read("js/ui.js");
+  const state = read("js/state.js");
   assert.match(html, /id="speedSlider"[^>]*min="0\.5"[^>]*max="2"/);
-  assert.match(html, /id="textSizeSlider"[^>]*min="24"[^>]*max="96"/);
+  assert.match(html, /id="cardSizeSlider"[^>]*min="0\.7"[^>]*max="1\.5"/);
   assert.match(app, /\$\("speedSlider"\)\.addEventListener\("input"/);
-  assert.match(app, /\$\("textSizeSlider"\)\.addEventListener\("input"/);
+  assert.match(app, /\$\("cardSizeSlider"\)\.addEventListener\("input"/);
   assert.match(app, /speechRate: speechRate/);
-  assert.match(app, /cardTextMax: cardTextMax/);
+  assert.match(app, /cardSizeScale: cardSizeScale/);
+  assert.match(state, /let cardSizeScale = 1;/);
   assert.match(speech, /utterance\.rate = \(typeof speechRate/);
   assert.match(speech, /return Math\.max\(120, Math\.round\(baseMs \/ rate\)\)/);
   assert.match(ui, /function updateSettingsControls/);
-  assert.match(ui, /const maxFont = Math\.round\(cardTextMax/);
+  assert.match(ui, /const height = baseHeight \* scale;/);
+  assert.match(ui, /const maxFont = \(mobile \? 56 : 96\) \* scale/);
+  assert.match(ui, /const visibleCards = mobile \? 2 : 3;/);
+  assert.match(ui, /const minimum = mobile \? 160 : 80;/);
+});
+
+test("wide and small portrait cards use separate layout logic", () => {
+  const html = read("index.html");
+  const css = read("css/redesign.css");
+  const ui = read("js/ui.js");
+  const app = read("js/app.js");
+  assert.match(html, /data-layout="wide"/);
+  assert.match(ui, /function updateLayoutMode/);
+  assert.match(ui, /document\.documentElement\.dataset\.layout = mobile \? "mobile" : "wide"/);
+  assert.match(app, /updateLayoutMode\(\)/);
+  assert.match(css, /\[data-layout="wide"\] \.card-sides \{[\s\S]*?display: grid;/);
+  assert.match(css, /\[data-layout="mobile"\] \.card-sides \{[\s\S]*?flex: 0 1 auto;/);
+  assert.match(css, /\[data-layout="mobile"\] \.term-text \{[\s\S]*?white-space: nowrap;/);
+  assert.match(css, /\.side-line \{[\s\S]*?gap: clamp\(14\s*px, 1\.5vw, 24\s*px\)/);
+});
+
+test("speech text never contains dots or other punctuation", () => {
+  const config = read("js/config.js");
+  const speech = read("js/speech.js");
+  assert.match(config, /function cleanSpeechText/);
+  assert.ok(config.includes('/[\\p{P}\\p{S}]+/gu'));
+  assert.match(speech, /cleanSpeechText\(stripTilde\(/);
+  assert.equal(evaluate('cleanSpeechText("A... B!! (C), 100%")'), "A B C 100");
+  const spokenVm = vm.createContext({
+    window: {},
+    document: { getElementById: () => null, querySelectorAll: () => [] },
+    navigator: { userAgent: "Chrome/130.0.0.0" },
+    SpeechSynthesisUtterance: function (text) { this.text = text; },
+    speechSynthesis: { getVoices: () => [] },
+    console,
+    Intl,
+    setTimeout,
+  });
+  const bundle = ["js/config.js", "js/state.js", "js/speech.js"]
+    .map(file => read(file)).join("\n;\n");
+  vm.runInContext(bundle, spokenVm, { filename: "speech-bundle.js" });
+  const spoken = vm.runInContext(
+    'makeUtterance({ front: { speakText: "Wait... please!", locale: "en-US" } }, "front").text',
+    spokenVm,
+  );
+  assert.equal(spoken, "Wait please");
 });
 
 const speechContext = userAgent => {

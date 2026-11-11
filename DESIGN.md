@@ -36,7 +36,7 @@ Six accent themes use the same semantic token names. A language change selects a
 Type roles:
 
 - UI: system sans, body at 16px, line height 1.5.
-- Display: Iowan Old Style, Palatino, Georgia, or the local serif fallback. Card text auto fits to the available side area with a binary size search. A Card text size slider in settings sets the maximum font size; the default is 96 px and fullscreen allows 1.5 times that. Words are vertically centered with their sound buttons.
+- Display: Iowan Old Style, Palatino, Georgia, or the local serif fallback. Card text auto fits to the available side area with a binary size search. One Card size slider scales card height and the maximum fitted font by the same factor, from 70% to 150%. The default is 100%. Words are vertically centered with their sound buttons, with clear space between the sound icon and the word.
 - Data: system monospace for ordinals and codes, with tabular numerals.
 
 Spacing uses a 4px rhythm: 4, 8, 12, 16, 20, 24, 32, 40, 48, and 64. Gaps come from the scale, related items sit closer than unrelated items, and the page has one gutter. The header is compact so the card list starts high on short screens.
@@ -49,11 +49,12 @@ Radii are intentionally small: 2px for cards, 4px for controls, and 999px only f
 - Language names are not repeated beside each side. The pair label beside the ordinal is enough, for example `6日本語 → English`.
 - The duplicate part of speech text beside the pair label is removed because the tag already carries it.
 - No status, count, or coverage line is shown in the product UI.
-- The first screen gives cards a fixed height computed from the viewport, bottom player, and gap. At least two cards are fully visible without scrolling.
+- At the 100% base size, a wide window or landscape screen fits three full cards without scrolling: one previous, one current, and one next. Height is computed from the viewport, bottom player, and gaps.
 - Fullscreen reuses the exact first page card markup, fills the stage height, and reserves space for its navigation. It never needs an internal scroll.
+- Small portrait screens use separate logic. The two languages stack one below the other instead of sitting side by side, and each word or meaning stays on one line with its reading and sound button. Up to two cards fit the base view, with a taller minimum on very short screens. Wide and landscape screens keep the side by side pair.
 - A bottom player stays on the first page with play or pause, previous, next, position, and progress. It is hidden while fullscreen is open.
 - Fullscreen keeps previous and next buttons plus a counter. Keyboard arrows and space still navigate.
-- A Playback speed slider controls speech rate and the gap between autoplay cards. A Card text size slider controls the maximum auto fitted font size. Both are saved with preferences.
+- A Playback speed slider controls speech rate and the gap between autoplay cards. A Card size slider changes card height and fitted text together. Both are saved with preferences. Spoken words are cleaned of dots and other punctuation before synthesis.
 
 ## Measured contrast
 
@@ -82,7 +83,7 @@ All text and action pairs exceed WCAG AA 4.5:1. Essential control borders use th
 - Touch targets are at least 44px.
 - Color is never the only state cue: labels, icons, text, and selected backgrounds carry meaning too.
 - Sticky chrome does not cover focused cards: cards reserve scroll margin.
-- Range sliders have visible labels and live value outputs. Speed changes apply to new utterances and autoplay gaps; text size changes refit visible cards immediately.
+- Range sliders have visible labels and live value outputs. Speed changes apply to new utterances and autoplay gaps; card size changes refit visible cards immediately without changing the viewport width.
 - Native selects are retained as a deliberate scope exception. They are styled to match the system and keep browser keyboard, mobile picker, and accessibility behavior. Replacing them with custom listboxes would add a large amount of JavaScript to a static, offline app.
 
 ## Copy and content

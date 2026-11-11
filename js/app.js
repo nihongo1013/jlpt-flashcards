@@ -32,7 +32,7 @@ function persistSettings() {
       showSenseContext: showSenseContext,
       accent: currentAccent,
       speechRate: speechRate,
-      cardTextMax: cardTextMax,
+      cardSizeScale: cardSizeScale,
     }));
   } catch (_) {
     /* localStorage can be unavailable when opened directly as file:// */
@@ -58,8 +58,8 @@ function applyStoredSettings() {
   showSenseContext = saved.showSenseContext === true;
   const savedRate = Number(saved.speechRate);
   if (savedRate >= 0.5 && savedRate <= 2) speechRate = savedRate;
-  const savedTextMax = Number(saved.cardTextMax);
-  if (savedTextMax >= 24 && savedTextMax <= 96) cardTextMax = savedTextMax;
+  const savedScale = Number(saved.cardSizeScale);
+  if (savedScale >= 0.7 && savedScale <= 1.5) cardSizeScale = savedScale;
   if (ACCENT_KEYS.includes(saved.accent)) {
     currentAccent = saved.accent;
     document.documentElement.dataset.accent = currentAccent;
@@ -179,8 +179,9 @@ function bindDeckEvents() {
     persistSettings();
   });
 
-  $("textSizeSlider").addEventListener("input", event => {
-    cardTextMax = Math.min(96, Math.max(24, Number(event.target.value) || 96));
+  $("cardSizeSlider").addEventListener("input", event => {
+    cardSizeScale = Math.min(1.5, Math.max(0.7, Number(event.target.value) || 1));
+    document.documentElement.style.setProperty("--card-size-scale", cardSizeScale);
     updateSettingsControls();
     fitCardsToViewport();
     if ($("fsOverlay").classList.contains("on")) fitFullscreenCard();
@@ -230,12 +231,14 @@ function bindDialogHandlers() {
 
 function init() {
   applyStoredSettings();
+  updateLayoutMode();
   populateLanguageControls();
   bindDeckEvents();
   bindCardEvents();
   bindDialogHandlers();
   initVoices();
   window.addEventListener("resize", () => {
+    updateLayoutMode();
     fitCardsToViewport();
     if ($("fsOverlay").classList.contains("on")) fitFullscreenCard();
   });

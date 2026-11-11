@@ -42,18 +42,37 @@ function updatePlayer() {
   }
 }
 
+function isMobilePortrait() {
+  const query = "(max-width: 43.75em) and (orientation: portrait)";
+  try {
+    if (window.matchMedia) return window.matchMedia(query).matches;
+  } catch (_) {
+    /* Fall back to viewport dimensions below. */
+  }
+  const width = window.innerWidth || document.documentElement.clientWidth || 0;
+  const height = window.innerHeight || document.documentElement.clientHeight || 0;
+  return width > 0 && width <= 700 && height > width;
+}
+
+function updateLayoutMode() {
+  const mobile = isMobilePortrait();
+  document.documentElement.dataset.layout = mobile ? "mobile" : "wide";
+  return mobile;
+}
+
 function updateSettingsControls() {
+  document.documentElement.style.setProperty("--card-size-scale", String(cardSizeScale));
   const speed = $("speedSlider");
   if (speed) {
     speed.value = String(speechRate);
     const output = $("speedValue");
     if (output) output.textContent = Number(speechRate).toFixed(1) + "x";
   }
-  const size = $("textSizeSlider");
+  const size = $("cardSizeSlider");
   if (size) {
-    size.value = String(cardTextMax);
-    const output = $("textSizeValue");
-    if (output) output.textContent = Math.round(cardTextMax) + " px";
+    size.value = String(cardSizeScale);
+    const output = $("cardSizeValue");
+    if (output) output.textContent = Math.round(cardSizeScale * 100) + "%";
   }
 }
 
@@ -131,16 +150,20 @@ function sideBlock(card, index, side) {
 function fitTermText(element, maxFont) {
   const copy = element.closest(".side-copy");
   if (!copy) return;
-  const width = copy.clientWidth;
-  const height = copy.clientHeight;
-  if (!width || !height) return;
+  const style = getComputedStyle(copy);
+  const inlineReading = style.flexDirection === "row";
+  const copyGap = parseFloat(style.columnGap) || 0;
   const reading = copy.querySelector(".reading");
-  const readingHeight = reading ? reading.offsetHeight : 0;
+  const readingWidth = inlineReading && reading ? reading.offsetWidth : 0;
+  const readingHeight = !inlineReading && reading ? reading.offsetHeight : 0;
+  const width = Math.max(40, copy.clientWidth - readingWidth - (readingWidth ? copyGap : 0));
+  const height = copy.clientHeight;
+  if (!height) return;
   const availableHeight = Math.max(24, height - readingHeight - 4);
   element.style.overflow = "hidden";
   element.style.maxHeight = availableHeight + "px";
   let low = 14;
-  let high = Math.max(14, Math.min(160, maxFont));
+  let high = Math.max(14, Math.min(220, maxFont));
   let best = low;
   for (let step = 0; step < 9; step++) {
     const middle = (low + high) / 2;
@@ -153,7 +176,7 @@ function fitTermText(element, maxFont) {
       high = middle;
     }
   }
-  element.style.fontSize = best.toFixed(1) + "px";
+  element.style.fontSize = Math.max(12, best).toFixed(1) + "px";
   element.style.maxHeight = "";
   element.style.overflow = "";
   if (reading) {
@@ -161,32 +184,43 @@ function fitTermText(element, maxFont) {
   }
 }
 
-function fitCardText(root) {
+function fitCardText(root, scale) {
   if (!root) return;
   const fullscreen = !!root.closest(".fullscreen-overlay");
-  const maxFont = Math.round(cardTextMax * (fullscreen ? 1.5 : 1));
+  const mobile = isMobilePortrait();
+  const maxFont = (mobile ? 56 : 96) * scale * (fullscreen ? 1.5 : 1);
   root.querySelectorAll(".term-text").forEach(element => fitTermText(element, maxFont));
 }
 
 function fitCardsToViewport() {
   const list = $("list");
   if (!list) return;
+  const mobile = updateLayoutMode();
+  const scale = Number(cardSizeScale) || 1;
+  document.documentElement.style.setProperty("--card-size-scale", String(scale));
   const player = $("autoplayBar");
   const fullscreen = $("fsOverlay").classList.contains("on");
   const playerHidden = !player || player.classList.contains("fs-hidden") || fullscreen;
   const playerHeight = playerHidden ? 0 : player.getBoundingClientRect().height;
   const top = list.getBoundingClientRect().top;
   const gap = parseFloat(getComputedStyle(list).rowGap) || 0;
+  /* At 100% the wide or landscape base shows previous, current, and next. */
+  const visibleCards = mobile ? 2 : 3;
   const available = Math.max(0, window.innerHeight - top - playerHeight - gap);
-  const height = Math.max(96, available / 2);
+  const minimum = mobile ? 160 : 80;
+  const baseHeight = Math.max(minimum, (available - (visibleCards - 1) * gap) / visibleCards);
+  const height = baseHeight * scale;
   list.style.setProperty("--card-height", height.toFixed(1) + "px");
-  fitCardText(list);
+  fitCardText(list, scale);
 }
 
 function fitFullscreenCard() {
   const overlay = $("fsOverlay");
   const stage = $("fsCard");
   if (!stage) return;
+  updateLayoutMode();
+  const scale = Number(cardSizeScale) || 1;
+  document.documentElement.style.setProperty("--card-size-scale", String(scale));
   const nav = overlay ? overlay.querySelector(".fs-nav") : null;
   const navHeight = nav ? nav.getBoundingClientRect().height : 0;
   const navMargin = nav ? (parseFloat(getComputedStyle(nav).marginTop) || 0) : 0;
@@ -196,7 +230,7 @@ function fitFullscreenCard() {
     : 0;
   const available = Math.max(240, window.innerHeight - overlayPadding - navHeight - navMargin);
   stage.style.setProperty("--fs-stage-height", available.toFixed(1) + "px");
-  fitCardText(stage);
+  fitCardText(stage, scale);
 }
 
 function renderCardContent(card, index, fullscreen) {

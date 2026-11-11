@@ -39,7 +39,15 @@ const DEFAULT_TARGET_LANG = "en";
 const VISIBLE_CARD_STEP = 80;
 
 function stripTilde(text) {
-  return (text || "").replace(/[〜~]/g, "").replace(/\*\*\//g, "").trim();
+  return (text || "").replace(/[〜～~]/g, "").replace(/\*\*\//g, "").trim();
+}
+
+/* Speech synthesis should read words, not dots or punctuation marks. */
+function cleanSpeechText(text) {
+  return String(text || "")
+    .replace(/[\p{P}\p{S}]+/gu, " ")
+    .replace(/\s+/gu, " ")
+    .trim();
 }
 
 function escapeHtml(value) {
