@@ -12,6 +12,8 @@ let visibleLimit = VISIBLE_CARD_STEP;
 let shuffled = false;
 let showSenseContext = false;
 let selectedCardIndex = 0;
+let speechRate = 1;
+let cardTextMax = 96;
 
 let currentSpeakingBtn = null;
 let allVoices = [];

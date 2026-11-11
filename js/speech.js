@@ -176,8 +176,13 @@ function makeUtterance(card, side) {
     utterance.voice = voice;
     utterance.lang = voice.lang || utterance.lang;
   }
-  utterance.rate = 0.9;
+  utterance.rate = (typeof speechRate !== "undefined" && Number(speechRate)) || 1;
   return utterance;
+}
+
+function playbackGap(baseMs) {
+  const rate = (typeof speechRate !== "undefined" && Number(speechRate)) || 1;
+  return Math.max(120, Math.round(baseMs / rate));
 }
 
 function setSpeakingState(index, side, on) {
@@ -216,7 +221,7 @@ function playCardPair(index, onDone, isActive) {
   const first = canSpeak() ? makeUtterance(card, "front") : null;
   const second = canSpeak() ? makeUtterance(card, "back") : null;
   if (!first || !second) {
-    if (onDone && active()) setTimeout(onDone, 600);
+    if (onDone && active()) setTimeout(onDone, playbackGap(600));
     return;
   }
 
@@ -241,7 +246,7 @@ function playCardPair(index, onDone, isActive) {
     setTimeout(() => {
       if (!active()) { cleanup(); return; }
       speechSynthesis.speak(second);
-    }, 350);
+    }, playbackGap(350));
   };
   first.onerror = () => finish(active());
   second.onend = () => finish(true);

@@ -15,14 +15,62 @@ function setSelectValue(id, value) {
   if (element && value) element.value = value;
 }
 
-function updatePlaybackChrome() {
-  const bar = document.querySelector(".pair-bar");
-  if (bar) {
-    const fullscreen = $("fsOverlay").classList.contains("on");
-    bar.classList.toggle("hidden", autoplayActive || fullscreen);
+function activePlaybackIndex() {
+  return autoplayActive ? autoplayIndex : selectedCardIndex;
+}
+
+function setPlaybackIndex(index) {
+  if (autoplayActive) autoplayIndex = index;
+  else selectedCardIndex = index;
+}
+
+function updatePlayer() {
+  const total = pool.length;
+  const index = total ? Math.max(0, Math.min(total - 1, activePlaybackIndex())) : 0;
+  const label = total ? (index + 1) + " / " + formatCount(total) : "0 / 0";
+  const status = $("autoplayStatus");
+  if (status) status.textContent = label;
+  const counter = $("fsCounter");
+  if (counter) counter.textContent = label;
+  const fill = $("progressFill");
+  if (fill) fill.style.width = total ? ((index + 1) / total * 100).toFixed(2) + "%" : "0%";
+  const progress = document.querySelector(".progress");
+  if (progress) {
+    progress.setAttribute("aria-valuemin", "0");
+    progress.setAttribute("aria-valuemax", String(total));
+    progress.setAttribute("aria-valuenow", String(index + 1));
   }
+}
+
+function updateSettingsControls() {
+  const speed = $("speedSlider");
+  if (speed) {
+    speed.value = String(speechRate);
+    const output = $("speedValue");
+    if (output) output.textContent = Number(speechRate).toFixed(1) + "x";
+  }
+  const size = $("textSizeSlider");
+  if (size) {
+    size.value = String(cardTextMax);
+    const output = $("textSizeValue");
+    if (output) output.textContent = Math.round(cardTextMax) + " px";
+  }
+}
+
+function updatePlaybackChrome() {
+  const fullscreen = $("fsOverlay").classList.contains("on");
+  const bar = document.querySelector(".pair-bar");
+  if (bar) bar.classList.toggle("hidden", autoplayActive || fullscreen);
+  const player = $("autoplayBar");
+  if (player) {
+    player.classList.toggle("fs-hidden", fullscreen);
+    player.classList.toggle("on", autoplayActive);
+  }
+  const headerButton = $("autoplayBtn");
+  if (headerButton) headerButton.classList.toggle("on", autoplayActive);
+  updatePlayer();
   fitCardsToViewport();
-  if ($("fsOverlay").classList.contains("on")) fitFullscreenCard();
+  if (fullscreen) fitFullscreenCard();
 }
 
 function setModeVisibility() {
@@ -47,6 +95,7 @@ function setModeVisibility() {
 
   const categoryLabel = $("catLabel");
   if (categoryLabel) categoryLabel.textContent = "Category";
+  updateSettingsControls();
   updatePlaybackChrome();
 }
 
@@ -79,36 +128,75 @@ function sideBlock(card, index, side) {
     '</section>';
 }
 
+function fitTermText(element, maxFont) {
+  const copy = element.closest(".side-copy");
+  if (!copy) return;
+  const width = copy.clientWidth;
+  const height = copy.clientHeight;
+  if (!width || !height) return;
+  const reading = copy.querySelector(".reading");
+  const readingHeight = reading ? reading.offsetHeight : 0;
+  const availableHeight = Math.max(24, height - readingHeight - 4);
+  element.style.overflow = "hidden";
+  element.style.maxHeight = availableHeight + "px";
+  let low = 14;
+  let high = Math.max(14, Math.min(160, maxFont));
+  let best = low;
+  for (let step = 0; step < 9; step++) {
+    const middle = (low + high) / 2;
+    element.style.fontSize = middle.toFixed(1) + "px";
+    const fits = element.scrollWidth <= width + 1 && element.scrollHeight <= availableHeight + 1;
+    if (fits) {
+      best = middle;
+      low = middle;
+    } else {
+      high = middle;
+    }
+  }
+  element.style.fontSize = best.toFixed(1) + "px";
+  element.style.maxHeight = "";
+  element.style.overflow = "";
+  if (reading) {
+    reading.style.fontSize = Math.max(12, Math.min(20, best * 0.32)).toFixed(1) + "px";
+  }
+}
+
+function fitCardText(root) {
+  if (!root) return;
+  const fullscreen = !!root.closest(".fullscreen-overlay");
+  const maxFont = Math.round(cardTextMax * (fullscreen ? 1.5 : 1));
+  root.querySelectorAll(".term-text").forEach(element => fitTermText(element, maxFont));
+}
+
 function fitCardsToViewport() {
   const list = $("list");
   if (!list) return;
-  list.style.removeProperty("--card-scale");
-  const cards = list.querySelectorAll(".card");
-  if (cards.length < 2) {
-    list.style.setProperty("--card-scale", "1");
-    return;
-  }
-  const first = cards[0].getBoundingClientRect();
-  const second = cards[1].getBoundingClientRect();
-  const natural = second.bottom - first.top;
-  const available = Math.max(0, window.innerHeight - list.getBoundingClientRect().top);
-  const scale = natural > 0 && available > 0 ? Math.min(1, available / natural) : 1;
-  list.style.setProperty("--card-scale", scale.toFixed(3));
+  const player = $("autoplayBar");
+  const fullscreen = $("fsOverlay").classList.contains("on");
+  const playerHidden = !player || player.classList.contains("fs-hidden") || fullscreen;
+  const playerHeight = playerHidden ? 0 : player.getBoundingClientRect().height;
+  const top = list.getBoundingClientRect().top;
+  const gap = parseFloat(getComputedStyle(list).rowGap) || 0;
+  const available = Math.max(0, window.innerHeight - top - playerHeight - gap);
+  const height = Math.max(96, available / 2);
+  list.style.setProperty("--card-height", height.toFixed(1) + "px");
+  fitCardText(list);
 }
 
 function fitFullscreenCard() {
+  const overlay = $("fsOverlay");
   const stage = $("fsCard");
   if (!stage) return;
-  stage.style.removeProperty("--fs-scale");
-  const card = stage.querySelector(".card");
-  if (!card) {
-    stage.style.setProperty("--fs-scale", "1");
-    return;
-  }
-  const available = stage.clientHeight;
-  const natural = card.scrollHeight;
-  const scale = natural > 0 && available > 0 ? Math.min(1, available / natural) : 1;
-  stage.style.setProperty("--fs-scale", scale.toFixed(3));
+  const nav = overlay ? overlay.querySelector(".fs-nav") : null;
+  const navHeight = nav ? nav.getBoundingClientRect().height : 0;
+  const navMargin = nav ? (parseFloat(getComputedStyle(nav).marginTop) || 0) : 0;
+  const overlayStyle = overlay ? getComputedStyle(overlay) : null;
+  const overlayPadding = overlayStyle
+    ? (parseFloat(overlayStyle.paddingTop) || 0) + (parseFloat(overlayStyle.paddingBottom) || 0)
+    : 0;
+  const available = Math.max(240, window.innerHeight - overlayPadding - navHeight - navMargin);
+  stage.style.setProperty("--fs-stage-height", available.toFixed(1) + "px");
+  fitCardText(stage);
 }
 
 function renderCardContent(card, index, fullscreen) {
@@ -141,6 +229,7 @@ function renderCardContent(card, index, fullscreen) {
 function render() {
   const list = $("list");
   if (!list) return;
+  updatePlayer();
   if (!pool.length) {
     const reason = deckMode === "dictionary"
       ? "No cards match this pair and filter. Try another pair or clear the search."
@@ -178,6 +267,7 @@ function ensureVisible(index) {
 function selectCard(index) {
   if (index < 0 || index >= pool.length) return;
   selectedCardIndex = index;
+  updatePlayer();
   if (ensureVisible(index)) return;
   document.querySelectorAll(".card[data-card-index]").forEach(card => {
     card.classList.toggle("active", Number(card.dataset.cardIndex) === index);
@@ -220,15 +310,14 @@ function renderFSCard(direction) {
   const container = $("fsCard");
   if (!pool.length) {
     if (container) container.innerHTML = '<div class="empty">No cards available.</div>';
+    updatePlayer();
     fitFullscreenCard();
     return;
   }
-  const index = Math.max(0, Math.min(
-    pool.length - 1,
-    autoplayActive ? autoplayIndex : selectedCardIndex
-  ));
+  const index = Math.max(0, Math.min(pool.length - 1, activePlaybackIndex()));
   const content = renderCardContent(pool[index], index, true);
   const token = ++fsRenderToken;
+  updatePlayer();
 
   if (direction) {
     const outClass = direction === "next" ? "fs-slide-out-left" : "fs-slide-out-right";
@@ -261,26 +350,24 @@ function renderFSCard(direction) {
 
 function fsNext() {
   if (!pool.length) return;
-  const index = autoplayActive ? autoplayIndex : selectedCardIndex;
+  const index = activePlaybackIndex();
   if (index >= pool.length - 1) return;
-  if (autoplayActive) autoplayIndex = index + 1;
-  else selectedCardIndex = index + 1;
-  const newIndex = autoplayActive ? autoplayIndex : selectedCardIndex;
-  selectCard(newIndex);
+  setPlaybackIndex(index + 1);
+  selectCard(index + 1);
+  updatePlayer();
   renderFSCard("next");
-  playCardPair(newIndex);
+  playCardPair(index + 1);
 }
 
 function fsPrev() {
   if (!pool.length) return;
-  const index = autoplayActive ? autoplayIndex : selectedCardIndex;
+  const index = activePlaybackIndex();
   if (index <= 0) return;
-  if (autoplayActive) autoplayIndex = index - 1;
-  else selectedCardIndex = index - 1;
-  const newIndex = autoplayActive ? autoplayIndex : selectedCardIndex;
-  selectCard(newIndex);
+  setPlaybackIndex(index - 1);
+  selectCard(index - 1);
+  updatePlayer();
   renderFSCard("prev");
-  playCardPair(newIndex);
+  playCardPair(index - 1);
 }
 
 function toggleAutoplay() {
@@ -292,7 +379,6 @@ function startAutoplay() {
   if (!pool.length) return;
   autoplayActive = true;
   autoplayIndex = Math.min(selectedCardIndex, pool.length - 1);
-  $("autoplayBtn").classList.add("on");
   updatePlaybackChrome();
   playCurrentCard();
 }
@@ -301,28 +387,48 @@ function stopAutoplay() {
   autoplayActive = false;
   currentSpeakingBtn = null;
   if (canSpeak()) speechSynthesis.cancel();
-  const button = $("autoplayBtn");
-  if (button) button.classList.remove("on");
   document.querySelectorAll(".speaking").forEach(node => node.classList.remove("speaking"));
   updatePlaybackChrome();
 }
 
-function playCurrentCard() {
-  if (!autoplayActive || autoplayIndex >= pool.length) {
-    stopAutoplay();
+function playCurrentCard(direction) {
+  const index = activePlaybackIndex();
+  if (!pool.length || index < 0 || index >= pool.length) {
+    if (autoplayActive) stopAutoplay();
     return;
   }
-  selectCard(autoplayIndex);
-  const cardNode = document.querySelector('.card[data-card-index="' + autoplayIndex + '"]');
+  selectCard(index);
+  updatePlayer();
+  const cardNode = document.querySelector('.card[data-card-index="' + index + '"]');
   if (cardNode) cardNode.scrollIntoView({ behavior: "smooth", block: "center" });
 
-  if ($("fsOverlay").classList.contains("on")) renderFSCard("next");
+  if ($("fsOverlay").classList.contains("on")) renderFSCard(direction);
 
-  playCardPair(autoplayIndex, () => {
+  playCardPair(index, () => {
     if (!autoplayActive) return;
+    if (autoplayIndex >= pool.length - 1) {
+      stopAutoplay();
+      return;
+    }
     autoplayIndex++;
     setTimeout(() => {
-      if (autoplayActive) playCurrentCard();
-    }, 800);
+      if (autoplayActive) playCurrentCard("next");
+    }, playbackGap(800));
   }, () => autoplayActive);
+}
+
+function nextCard() {
+  if (!pool.length) return;
+  const index = activePlaybackIndex();
+  if (index >= pool.length - 1) return;
+  setPlaybackIndex(index + 1);
+  playCurrentCard("next");
+}
+
+function prevCard() {
+  if (!pool.length) return;
+  const index = activePlaybackIndex();
+  if (index <= 0) return;
+  setPlaybackIndex(index - 1);
+  playCurrentCard("prev");
 }
