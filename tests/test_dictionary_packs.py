@@ -1,5 +1,6 @@
 """Integrity checks for the generated, API-free dictionary packs."""
 
+import csv
 import json
 import re
 import unittest
@@ -99,6 +100,98 @@ class DictionaryPackTests(unittest.TestCase):
         self.assertEqual(len(codes), len(set(codes)))
         supported = {item["code"] for item in self.meta["languages"]}
         self.assertEqual(set(codes) - supported, set())
+
+    def test_design_doctrine_is_documented(self):
+        design = (ROOT / "DESIGN.md").read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("Operate", design)
+        self.assertIn("WCAG", design)
+        self.assertIn("open a PR to `main`", readme)
+        self.assertIn("www.ui-skills.com", design)
+        self.assertIn("agenticskills.io/category/design", design)
+        self.assertIn("plugin87/ux-ui-agent-skills", design)
+
+    def test_frontend_uses_the_design_layer_without_decorative_glyphs(self):
+        files = [
+            ROOT / "index.html",
+            ROOT / "css" / "redesign.css",
+            ROOT / "css" / "styles.css",
+            ROOT / "DESIGN.md",
+        ]
+        files += sorted((ROOT / "js").glob("*.js"))
+        emoji = re.compile(
+            "[\U0001F000-\U0001FAFF\U00002600-\U000026FF"
+            "\U00002700-\U000027BF\U00002B00-\U00002BFF]"
+        )
+        for path in files:
+            text = path.read_text(encoding="utf-8")
+            self.assertIsNone(emoji.search(text), f"decorative glyph in {path}")
+            self.assertNotIn("\u2014", text, f"em dash in {path}")
+            self.assertNotIn("\u2013", text, f"en dash in {path}")
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        css = (ROOT / "css" / "redesign.css").read_text(encoding="utf-8")
+        ui = (ROOT / "js" / "ui.js").read_text(encoding="utf-8")
+        app = (ROOT / "js" / "app.js").read_text(encoding="utf-8")
+        self.assertIn("css/redesign.css", html)
+        self.assertIn("--surface-page", css)
+        self.assertIn("--font-display", css)
+        self.assertIn("prefers-reduced-motion: reduce", css)
+        self.assertIn("prefers-color-scheme: dark", css)
+        self.assertIn("card-meta", ui)
+        self.assertIn("card-index", ui)
+        self.assertIn("side-head", ui)
+        self.assertNotIn("startSakura", app)
+        self.assertNotIn("createSakuraPetal", ui)
+
+    def test_design_token_pairs_meet_wcag_aa_contrast(self):
+        def luminance(hex_color):
+            value = hex_color.lstrip("#")
+            channels = [int(value[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+            def linear(channel):
+                return channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4
+            red, green, blue = map(linear, channels)
+            return 0.2126 * red + 0.7152 * green + 0.0722 * blue
+
+        def ratio(foreground, background):
+            first, second = luminance(foreground), luminance(background)
+            high, low = max(first, second), min(first, second)
+            return (high + 0.05) / (low + 0.05)
+
+        pairs = [
+            ("#211D24", "#F4F1E8"),
+            ("#5C5660", "#F4F1E8"),
+            ("#211D24", "#FBF9F2"),
+            ("#2F5D50", "#F4F1E8"),
+            ("#F4F1E8", "#2F5D50"),
+            ("#211D24", "#D8E84A"),
+            ("#5C5660", "#D8E84A"),
+            ("#F4F1E8", "#17151A"),
+            ("#B9B2A9", "#17151A"),
+            ("#F4F1E8", "#211E25"),
+            ("#8FD3B6", "#17151A"),
+            ("#17151A", "#8FD3B6"),
+            ("#F4F1E8", "#35481C"),
+            ("#B9B2A9", "#35481C"),
+        ]
+        for foreground, background in pairs:
+            self.assertGreaterEqual(
+                ratio(foreground, background), 4.5,
+                f"contrast failure for {foreground} on {background}",
+            )
+
+    def test_csv_keeps_only_complete_meaning_columns(self):
+        with (ROOT / "Vocabulary.csv").open(encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            rows = list(reader)
+            fields = reader.fieldnames
+        self.assertIsNotNone(fields)
+        self.assertNotIn("te", fields)
+        self.assertEqual(len(rows), 6283)
+        self.assertFalse(any(not (row.get("h") or "").strip() for row in rows))
+        self.assertFalse(re.search(r'"te":', (ROOT / "data" / "vocabulary.js").read_text(encoding="utf-8")))
+        config = (ROOT / "js" / "config.js").read_text(encoding="utf-8")
+        self.assertNotRegex(config, r'^\s*te:\s*\{', re.MULTILINE)
+        self.assertNotIn('row.get("te"', (ROOT / "build_data.py").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

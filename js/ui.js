@@ -20,12 +20,19 @@ function setSelectValue(id, value) {
   if (element && value) element.value = value;
 }
 
+function updatePlaybackChrome() {
+  const bar = document.querySelector(".pair-bar");
+  if (bar) {
+    const fullscreen = $("fsOverlay").classList.contains("on");
+    bar.classList.toggle("hidden", autoplayActive || fullscreen);
+  }
+}
+
 function setModeVisibility() {
   const isDictionary = deckMode === "dictionary";
   toggleHidden("pairFields", !isDictionary);
   toggleHidden("jlptLangField", isDictionary);
   toggleHidden("levelSection", isDictionary);
-  toggleHidden("jlptDeckNote", isDictionary);
   setSelectValue("deckMode", deckMode);
   setSelectValue("sourceLang", sourceLang);
   setSelectValue("targetLang", targetLang);
@@ -42,31 +49,8 @@ function setModeVisibility() {
   if (levelSelect) levelSelect.disabled = isDictionary;
 
   const categoryLabel = $("catLabel");
-  if (categoryLabel) {
-    categoryLabel.textContent = isDictionary ? "Dictionary category" : "JLPT category";
-  }
-}
-
-function renderDataNote() {
-  const note = $("dataNote");
-  if (!note) return;
-  if (deckMode === "dictionary" && DICT_META) {
-    const stats = DICT_META.stats || {};
-    const source = DICT_META.source || {};
-    const attribution = safeUrl(source.attribution || "data/dictionary/ATTRIBUTION.md");
-    note.innerHTML =
-      '<span class="data-note-badge">OFFLINE DICTIONARY DATA</span> ' +
-      escapeHtml(formatCount(stats.languages || 0)) + ' languages · ' +
-      escapeHtml(formatCount(stats.concepts || 0)) + ' human-edited senses · ' +
-      'AI gap-fills excluded · no translation API. ' +
-      '<a href="' + escapeHtml(attribution) + '" target="_blank" rel="noopener noreferrer">Sources &amp; licence ↗</a>';
-  } else {
-    note.innerHTML =
-      '<span class="data-note-badge">LEGACY JLPT CSV</span> ' +
-      'Existing CSV values are shown as-is, including historical language fills. ' +
-      'No runtime translation is performed; choose “Dictionary pairs” for dictionary-attested-only cards. ' +
-      '<a href="Vocabulary.csv" target="_blank" rel="noopener noreferrer">View CSV ↗</a>';
-  }
+  if (categoryLabel) categoryLabel.textContent = "Category";
+  updatePlaybackChrome();
 }
 
 function updateStatus() {
@@ -75,14 +59,13 @@ function updateStatus() {
   const front = currentSideConfig("front");
   const back = currentSideConfig("back");
   if (!total) {
-    setStatus("No cards match these filters · " + front.label + " → " + back.label);
+    setStatus("No cards match these filters, " + front.label + " → " + back.label);
     return;
   }
-  const deckLabel = deckMode === "dictionary" ? "dictionary-attested" : "JLPT";
   setStatus(
-    formatCount(total) + " " + deckLabel + " card" + (total === 1 ? "" : "s") +
-    " · " + front.label + " → " + back.label +
-    " · showing " + formatCount(shown)
+    formatCount(total) + " card" + (total === 1 ? "" : "s") +
+    ", " + front.label + " → " + back.label +
+    ", showing " + formatCount(shown)
   );
 }
 
@@ -98,57 +81,50 @@ function sideBlock(card, index, side) {
   const isFront = side === "front";
   const buttonClass = isFront ? "jp-btn" : "en-btn";
   const textClass = isFront ? "jp-t" : "en-t";
-  const rowClass = isFront ? "jp-row" : "en-row";
-  const label = (isFront ? "Front · " : "Back · ") + (data.label || data.name);
-  const terms = data.alternates.slice(0, 3).map(escapeHtml).join(" · ");
+  const label = data.label || data.name || "";
+  const terms = data.alternates.slice(0, 3).map(escapeHtml).join(", ");
   const dir = data.dir || "ltr";
   const lang = data.locale || data.code || "";
   const rtlClass = data.rtl ? " rtl-text" : "";
   return '<section class="side-block ' + side + '-block">' +
-      '<div class="side-label">' + escapeHtml(label) +
-        (data.gender ? '<span class="gender-tag">' + escapeHtml(data.gender) + '</span>' : '') +
-      '</div>' +
-      '<div class="' + rowClass + '">' +
+      '<div class="side-head">' +
+        '<span class="side-label">' + escapeHtml(label) +
+          (data.gender ? '<span class="gender-tag">' + escapeHtml(data.gender) + '</span>' : '') +
+        '</span>' +
         speakerButton(index, side, buttonClass, "Play " + label) +
-        '<div class="term-block">' +
-          '<div class="' + textClass + ' term-text' + rtlClass + '" lang="' + escapeHtml(lang) + '" dir="' + dir + '">' +
-            escapeHtml(data.word) +
-          '</div>' +
-          (data.reading ? '<div class="ro-t reading" dir="ltr">' + escapeHtml(data.reading) + '</div>' : '') +
-          (terms ? '<div class="alt-terms"><span>Also</span> ' + terms + '</div>' : '') +
-          (data.fallback ? '<div class="fallback-note">English fallback — no CSV value for this language.</div>' : '') +
-        '</div>' +
       '</div>' +
+      '<div class="' + textClass + ' term-text' + rtlClass + '" lang="' + escapeHtml(lang) + '" dir="' + dir + '">' +
+        escapeHtml(data.word) +
+      '</div>' +
+      (data.reading ? '<div class="reading" dir="ltr">' + escapeHtml(data.reading) + '</div>' : '') +
+      (terms ? '<div class="alt-terms">' + terms + '</div>' : '') +
     '</section>';
 }
 
 function renderCardContent(card, index, fullscreen) {
-  const sourceUrl = safeUrl(card.sourceUrl);
-  const source = sourceUrl
-    ? '<a class="source-link" href="' + escapeHtml(sourceUrl) + '" target="_blank" rel="noopener noreferrer">' +
-        escapeHtml(card.sourceLabel) + ' ↗</a>'
-    : '<span class="source-link">' + escapeHtml(card.sourceLabel) + '</span>';
   const context = showSenseContext && (card.contextTitle || card.contextText)
-    ? '<div class="sense-context"><span>Sense</span> <strong>' + escapeHtml(card.contextTitle || "") + '</strong>' +
-        (card.contextText ? ' <span class="context-sep">—</span> ' + escapeHtml(card.contextText) : '') +
+    ? '<div class="sense-context"><strong>' + escapeHtml(card.contextTitle || "") + '</strong>' +
+        (card.contextText ? '<span class="context-sep">, </span>' + escapeHtml(card.contextText) : '') +
       '</div>'
     : "";
-  const rootClass = "card" + (fullscreen ? " fs-mode" : "") +
-    (index === selectedCardIndex ? " active" : "");
+  const rootClass = "card" + (index === selectedCardIndex ? " active" : "");
   const rootId = fullscreen ? "fs-card-item" : "card-" + index;
-  return '<div class="' + rootClass + '" id="' + rootId + '" ' +
+  const ordinal = String(index + 1).padStart(2, "0");
+  return '<article class="' + rootClass + '" id="' + rootId + '" ' +
       'data-card-index="' + index + '" data-index="' + index + '">' +
-      '<div class="pos">' + escapeHtml((card.pos || card.mode || "").toUpperCase()) + '</div>' +
+      '<div class="card-meta">' +
+        '<span class="card-index">' + ordinal + '</span>' +
+        '<span class="card-pair">' + escapeHtml(card.pairLabel || "") + '</span>' +
+        '<span class="card-pos">' + escapeHtml(card.pos || card.mode || "") + '</span>' +
+      '</div>' +
       sideBlock(card, index, "front") +
+      '<div class="card-divider" aria-hidden="true"></div>' +
       sideBlock(card, index, "back") +
       context +
-      '<div class="card-footer">' +
-        '<div class="card-source">' + source +
-          '<span class="source-note">' + escapeHtml(card.sourceNote || "") + '</span>' +
-        '</div>' +
+      '<footer class="card-footer">' +
         '<span class="lv-tag ' + escapeHtml(card.badgeClass || "") + '">' + escapeHtml(card.badge || "") + '</span>' +
-      '</div>' +
-    '</div>';
+      '</footer>' +
+    '</article>';
 }
 
 function render() {
@@ -157,7 +133,7 @@ function render() {
   updateStatus();
   if (!pool.length) {
     const reason = deckMode === "dictionary"
-      ? "No shared human-edited dictionary senses match this pair and filter. Try another pair or clear the search."
+      ? "No cards match this pair and filter. Try another pair or clear the search."
       : "No matches found. Try another level, category, or search.";
     list.innerHTML = '<div class="empty">' + escapeHtml(reason) + '</div>';
     return;
@@ -206,6 +182,7 @@ function toggleSettingsDialog() {
 
 function toggleFullscreen() {
   $("fsOverlay").classList.add("on");
+  updatePlaybackChrome();
   document.removeEventListener("keydown", fsKeyHandler);
   document.addEventListener("keydown", fsKeyHandler);
   renderFSCard();
@@ -213,6 +190,7 @@ function toggleFullscreen() {
 
 function closeFullscreen() {
   $("fsOverlay").classList.remove("on");
+  updatePlaybackChrome();
   document.removeEventListener("keydown", fsKeyHandler);
 }
 
@@ -303,6 +281,7 @@ function startAutoplay() {
   autoplayIndex = Math.min(selectedCardIndex, pool.length - 1);
   $("autoplayBtn").classList.add("on");
   $("autoplayBar").classList.add("on");
+  updatePlaybackChrome();
   playCurrentCard();
 }
 
@@ -315,6 +294,7 @@ function stopAutoplay() {
   if (button) button.classList.remove("on");
   if (bar) bar.classList.remove("on");
   document.querySelectorAll(".speaking").forEach(node => node.classList.remove("speaking"));
+  updatePlaybackChrome();
 }
 
 function playCurrentCard() {
@@ -351,18 +331,4 @@ function prevCard() {
     autoplayIndex--;
     playCurrentCard();
   }
-}
-
-function createSakuraPetal() {
-  const petal = document.createElement("div");
-  petal.className = "sakura-petal";
-  petal.textContent = "🌸";
-  petal.style.left = Math.random() * 100 + "vw";
-  petal.style.animation = `sakuraFall ${5 + Math.random() * 3}s linear ${Math.random() * 2}s`;
-  document.body.appendChild(petal);
-  setTimeout(() => { if (petal.parentNode) petal.remove(); }, 8000);
-}
-
-function startSakura() {
-  setInterval(createSakuraPetal, 3000);
 }
